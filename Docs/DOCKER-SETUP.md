@@ -6,9 +6,11 @@ Docker provides the easiest way to run POT. It automatically sets up PostgreSQL,
 
 The Docker setup runs the complete stack:
 
-- **PostgreSQL database** (port 5444) - Uses non-default port to avoid conflicts with local PostgreSQL installations
-- **ASP.NET Core API** (port 5241) - ASP.NET Core typically uses ports 5000-5300; if this conflicts with your local setup, see configuration details <!-- TODO-DOC: Link to port configuration section when created -->
-- **React frontend** (port 5175) - Uses port 5175 instead of Vite's default 5173
+- **PostgreSQL database** on host port 5444
+- **ASP.NET Core API** on port 5241
+- **React frontend** on port 5175
+
+Every port, why it was chosen, and which values must agree when one changes: [Ports and environments](reference/ports-and-environments.md).
 
 ## Choose Your Method
 
@@ -29,8 +31,8 @@ Before you run the task, make sure these local prerequisites exist:
 
 If `Source/Docker/.env.development` does not exist yet, copy it from the tracked
 `Source/Docker/.env.development.template` in the same folder and fill the values that file marks
-REQUIRED. Your copy is git-ignored; the template is the tracked starting point, and each value is
-described in the [Docker Developer Guide](../Source/Docker/DEVELOPER.md#environment-variables).
+REQUIRED. Your copy is git-ignored; the template is the tracked starting point, and
+[Configuration](reference/configuration.md) explains what each value does.
 
 > **Important:** VS Code must be opened at the workspace root (the `POT` folder) for tasks to work correctly. The tasks are defined in `.vscode/tasks.json` and rely on the workspace folder structure.
 

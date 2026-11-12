@@ -139,6 +139,9 @@ Accrual policy is explicit per expense:
 - `Automatic` enables accrual contribution.
 - `None` disables accrual contribution while retaining due-date scheduling and balance debits.
 
+How the metrics combine into availability, arrears and a projection: [Cashflow model](explanation/cashflow-model.md).
+Terms: [Glossary](reference/glossary.md).
+
 ### Accrual is derived, not stored
 
 No accrual value is persisted. `Accrued` is computed on read from the persisted schedule — `NextDue`, `AccrualStart`, `Frequency`, `FrequencyCount`, `EndDate` and `Amount` — and every accrual-bearing read (`/api/accounts`, `/api/accounts/{id}`, `/api/expenses`, `/api/projections`) obtains its values from that one engine for the same as-of date, so the values read are always the current ones.
@@ -250,11 +253,7 @@ POT runs in Docker containers for consistent development. The local stack is:
 ## Development Workflow
 
 1. **Clone the repository**
-2. **Configure environment** - Copy `Source/Docker/.env.development.template` to `Source/Docker/.env.development`, then update it as needed for:
-   - Database credentials
-   - SMTP settings (for email verification)
-   - JWT configuration
-   - CORS settings
+2. **Configure environment** - Copy `Source/Docker/.env.development.template` to `Source/Docker/.env.development` and set the values it marks; see [Configuration](reference/configuration.md)
 3. **Create required directory** - `Source/Docker/postgres-data/`
 4. **Start services** - Docker containers (recommended) or run manually
 5. **Access application** - Navigate to http://localhost:5175
@@ -269,6 +268,7 @@ The frontend communicates with the backend via RESTful APIs:
 - Base URL: `/api` (proxied to backend in development)
   - Docker: `http://localhost:5241` (via docker-compose)
   - Local: `http://localhost:5242` (via Visual Studio/dotnet run)
+  - Every port and environment: [Ports and environments](reference/ports-and-environments.md)
 - Authentication: JWT Bearer tokens
 - Content-Type: `application/json`
 - Error handling: RFC 9457 Problem Details - every failure carries `detail` except a `400`, which carries the validation

@@ -93,14 +93,7 @@ while the API is still applying migrations. Refresh if the first request fails.
 
 ### Ports
 
-**Local (compose):**
-
-- Client: `http://localhost:5175` → container port `80` (nginx)
-- Server: `http://localhost:5241` → container port `5241` (Kestrel)
-- PostgreSQL: `localhost:5444` → container port `5432`
-
-The postgres and client host ports deliberately differ from their container ports so they do not
-clash with a locally installed PostgreSQL or the Vite dev server.
+The local compose ports, and why each was chosen: [Ports and environments](../../Docs/reference/ports-and-environments.md).
 
 **Azure (Container Apps):** each container listens on its normal port (client `80`, API `5241`). Each
 container app has its own ingress and hostname, and the ingress terminates HTTPS: the client is served
@@ -429,43 +422,13 @@ POSTGRES_DB=Pot
 ### `.env.development` (git-ignored — copy it from the template)
 
 `Source/Docker/.env.development` is not in source control (`.gitignore` includes `*.development*`),
-so copy the tracked `Source/Docker/.env.development.template` and edit your copy. It supplies the
-values the compose file substitutes into the containers:
+so copy the tracked `Source/Docker/.env.development.template` and edit your copy. The template's own
+comments are the key list, including the query that finds a user's `RowId` for
+`PLATFORM_ADMIN_USERIDS`.
 
-```properties
-# Database credentials
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=<local password>
-
-# JWT (issuer and audience must match how the API is reached)
-JWT_ISSUER=http://localhost:5241
-JWT_AUDIENCE=http://localhost:5241
-JWT_SECRET_KEY=<long random value>
-
-# SMTP - required, the API validates these at startup
-SMTP_HOST=<smtp host>
-SMTP_PORT=<smtp port>
-SMTP_REQUIRE_TLS=<true|false>
-SMTP_AUTH_USERNAME=<username>
-SMTP_AUTH_PASSWORD=<password>
-SMTP_FROM_NAME=POT - Do Not Reply
-SMTP_FROM_ADDRESS=<from address>
-
-# CORS - must include the browser origin you use
-CORS_ALLOWED_ORIGINS=http://localhost:5175
-
-# Platform admin user RowIds (comma-separated, may be empty)
-PLATFORM_ADMIN_USERIDS=
-```
-
-Notes:
-
-- The API validates SMTP settings at startup, so those values cannot be blank even if you never send
-  email locally.
-- `JWT_SECRET_KEY` signs and verifies tokens; use a long random value and never reuse a production
-  key locally.
-- To find a user's `RowId` for `PLATFORM_ADMIN_USERIDS`, query the database:
-  `SELECT "RowId" FROM "User" WHERE "Username" = '<username>'`.
+[Configuration](../../Docs/reference/configuration.md) says what each group does and which values must
+agree. Two consequences bite in this stack: the API validates the SMTP values at startup, so they cannot
+be blank even when you never send email locally, and `JWT_SECRET_KEY` must be exactly 128 characters.
 
 ### Variables compose passes to the server
 

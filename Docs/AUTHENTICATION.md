@@ -2026,6 +2026,10 @@ WHERE r."Name" = 'Admin' AND p."Name" = 'new-feature:manage';
 
 **Platform administrators are identified via environment variables, not database roles.**
 
+> **Making yourself the first platform admin:** the end-to-end procedure, including approving your own
+> first account, is in [First-Time Configuration](FIRST-TIME-SETUP.md). This section documents the setting
+> itself.
+
 **Development (Docker):**
 
 Edit `Source/Docker/.env.development`:

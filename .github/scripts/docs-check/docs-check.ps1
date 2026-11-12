@@ -43,7 +43,7 @@ $script:RequiredAdrFields = @('id', 'title', 'status', 'date', 'area')
 $script:IndexStartMarker = '<!-- BEGIN GENERATED INDEX -->'
 $script:IndexEndMarker = '<!-- END GENERATED INDEX -->'
 
-$script:LinkScopeDirectories = @('Docs/adr', 'Docs/standards', 'Docs/prd', '.github')
+$script:LinkScopeDirectories = @('Docs/adr', 'Docs/standards', 'Docs/prd', 'Docs/reference', 'Docs/explanation', '.github')
 $script:LinkScopeFiles = @(
     'Docs/README.md',
     'AGENTS.md',

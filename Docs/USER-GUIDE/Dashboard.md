@@ -28,9 +28,8 @@ It also surfaces a stable Daily Need value, which answers: how much should I set
 
 - Daily Need: stable daily funding target across active obligations.
 - Operational Accruals: dynamic simulation metric that changes with due-date timing.
-- Accrued obligations: amount already set aside for the expense cycles in progress.
-- Arrears: amount owed for expense cycles whose due date has already passed without being settled.
-- Committed: accrued obligations plus arrears — what the account's balance is committed to cover.
+- Accrued, Arrears and Committed: what the balance is committed to cover. They are defined once in the
+  [glossary](../reference/glossary.md).
 - Available balance: spendable amount after the reserved and committed amounts.
 
 ## Step-by-Step Guide

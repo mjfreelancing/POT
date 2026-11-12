@@ -102,148 +102,37 @@ Before running POT, you need to configure environment settings including databas
 
 ### Step 1: Locate and Create Environment Files
 
-Navigate to the Docker directory:
+Three environment files matter in `Source/Docker`, and two of them are tracked:
 
-```bash
+| File                          | Tracked | Purpose                                                        |
+| ----------------------------- | ------- | -------------------------------------------------------------- |
+| `.env`                        | yes     | Compose project name and database name                          |
+| `.env.development.template`   | yes     | The starter overrides, and the only copy of the key list        |
+| `.env.development`            | no      | Your working copy, created from the template                    |
+
+### Step 2: Create `.env.development`
+
+```powershell
 cd Source/Docker
+Copy-Item .env.development.template .env.development
 ```
 
-You'll find these Docker environment files in version control:
+The template's defaults boot the stack as they are: database credentials, CORS and placeholder SMTP
+values that satisfy startup validation. Its comments explain each key. The copy is git-ignored because it
+holds your local settings; never put a real credential in the tracked template.
 
-- `.env` - Base configuration (database name, Docker Compose project name)
-- `.env.development.template` - Starter development overrides you can copy for local use
+### Step 3: Change what you need
 
-For local secrets, create your working copy:
+| Setting                 | What to change for a local Docker run                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `JWT_SECRET_KEY`        | Replace the placeholder with exactly 128 random characters before relying on the environment for anything beyond a boot   |
+| `SMTP_*`                | Replace the placeholders with real provider credentials before testing sign-up, password reset, invitations or reminders   |
+| `POSTGRES_PASSWORD`     | Only if you changed the password in `Source/Docker/Postgres/Dockerfile`; the two must match                                |
+| `CORS_ALLOWED_ORIGINS`  | Already correct for `http://localhost:5175`                                                                              |
+| `PLATFORM_ADMIN_USERIDS`| Leave empty for now; add your `RowId` after sign-up — see [First-Time Configuration](FIRST-TIME-SETUP.md)                 |
+| `JWT_ISSUER`, `JWT_AUDIENCE` | Already correct for `http://localhost:5241`; they must equal the URL the API is reached at                          |
 
-- `.env.development` - Development-specific settings actually used by Docker Compose - **create this from the template**
-
-> **Important:** `.env.development` is excluded from version control (`.gitignore`) because it contains sensitive information. Keep `.env.development.template` as the tracked starter file, then copy or rename it to `.env.development` for your machine.
-
-### Step 2: Create `.env.development` File
-
-Copy `Source/Docker/.env.development.template` to `Source/Docker/.env.development`, then edit the copied file as needed.
-
-You can use the template as-is to get the Docker stack running locally. It contains startup-safe defaults for database, CORS, and placeholder SMTP values.
-
-`Source/Docker/.env.development.template` currently contains:
-
-```bash
-# Development environment overrides for the Docker full-stack workflow.
-#
-# Copy this file to .env.development in the same folder, then edit your copy:
-#   Copy-Item .env.development.template .env.development
-#
-# The copy is git-ignored because it holds your local settings; this template is tracked. Never put a
-# real credential in this file.
-#
-# Values marked REQUIRED have no usable default, because the API validates them at startup. Everything
-# else below works as-is for a local stack.
-
-# Database Configuration
-# POSTGRES_PASSWORD must match the password the postgres image is created with
-# (Source/Docker/Postgres/Dockerfile - the default is "password").
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-
-# JWT Configuration
-# Issuer and audience must match the URL the API is reached at.
-JWT_ISSUER=http://localhost:5241
-JWT_AUDIENCE=http://localhost:5241
-# REQUIRED - replace with your own random value before relying on this environment for anything
-# beyond basic local startup. Tokens signed with the placeholder below are not trustworthy, and a
-# production key must never be reused here.
-JWT_SECRET_KEY=REPLACE_THIS_WITH_AN_EXACTLY_128_CHARACTER_RANDOM_SECRET_KEY_FOR_LOCAL_DEVELOPMENT_ONLY_0123456789ABCDEFGHIJKLMNOPQRSTUVW
-
-# SMTP Configuration
-# The API validates every one of these at startup, so none may be blank. These placeholder values
-# satisfy that validation only: replace them with real provider credentials before testing signup,
-# password reset, invitations or budget reminders.
-SMTP_HOST=localhost
-SMTP_PORT=2525
-SMTP_REQUIRE_TLS=false
-SMTP_AUTH_USERNAME=test
-SMTP_AUTH_PASSWORD=test
-SMTP_FROM_NAME=POT - Do Not Reply
-SMTP_FROM_ADDRESS=pot@example.local
-
-# CORS Configuration
-# Must include the browser origin the client is served from.
-CORS_ALLOWED_ORIGINS=http://localhost:5175
-
-# Platform Admin Configuration
-# Comma-separated list of user GUIDs (RowIds) that have platform-level admin access. May be empty
-# until a user exists. Find yours after signup with:
-#   SELECT "RowId" FROM "User" WHERE "Username" = '<username>';
-PLATFORM_ADMIN_USERIDS=
-```
-
-> **Startup-only option:** If you just need the Docker stack to boot before wiring up a real mail provider, you can temporarily use `SMTP_HOST=localhost`, `SMTP_PORT=2525`, `SMTP_REQUIRE_TLS=false`, `SMTP_AUTH_USERNAME=test`, `SMTP_AUTH_PASSWORD=test`, and `SMTP_FROM_ADDRESS=pot@example.local`. The server only requires these values to be present at startup. Email-dependent flows will still fail until you replace them with real SMTP credentials.
-
-> **Full usage:** Before using signup, password reset, or any other email flow, replace the placeholder SMTP settings with real provider credentials. Replace the placeholder `JWT_SECRET_KEY` with a real random 128-character secret before relying on the environment beyond basic local startup.
-
-### Step 3: Configure Each Setting
-
-Now update each setting in your `.env.development` file:
-
-#### Database Settings
-
-These are already in the template with defaults suitable for Docker:
-
-```bash
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-```
-
-> **Important:** The `POSTGRES_PASSWORD` must match the password configured in `Source/Docker/Postgres/Dockerfile`. The default value is `password`. If you change the password in the Dockerfile, you must update it here to match, otherwise the application will not be able to connect to the database.
-
-> **Note:** These defaults work for local development. For production, use stronger credentials.
-
-#### JWT Settings
-
-Update these values in your `.env.development`:
-
-```bash
-JWT_ISSUER=http://localhost:5241
-JWT_AUDIENCE=http://localhost:5241
-JWT_SECRET_KEY=<generate-128-character-key>
-```
-
-> **Note:** The `JWT_SECRET_KEY` must be **exactly 128 characters** (uses HMACSHA512 algorithm). Generate a random 128-character string using a password generator or random string tool. Both issuer and audience should point to the API server (the service that issues and validates tokens). For production, generate a new 128-character secret key and update both values to your API domain (e.g., both set to `https://api.yourdomain.com`).
-
-#### SMTP Configuration
-
-Update the SMTP settings with your email provider details:
-
-```bash
-# SMTP Configuration
-SMTP_HOST=your-smtp-server.com          # Your SMTP server hostname
-SMTP_PORT=587                            # SMTP port (587 for TLS, 465 for SSL)
-SMTP_REQUIRE_TLS=true                    # Use true for secure connection
-SMTP_AUTH_USERNAME=your-email@domain.com # Your email address
-SMTP_AUTH_PASSWORD=your-password         # Your email password or app password
-SMTP_FROM_NAME=POT - Do Not Reply        # Display name for outgoing emails
-SMTP_FROM_ADDRESS=your-email@domain.com  # From email address
-```
-
-#### CORS Settings
-
-Already configured for local development:
-
-```bash
-CORS_ALLOWED_ORIGINS=http://localhost:5175
-```
-
-> **Note:** This allows the React frontend (running on port 5175) to make API requests to the backend.
-
-#### Platform Admin
-
-Leave empty for initial setup:
-
-```bash
-PLATFORM_ADMIN_USERIDS=
-```
-
-> **Note:** After creating your first user account, you'll add your user GUID here to grant platform admin permissions. See [Platform Admin](#platform-admin) for details.
+What each value does and which values must agree: [Configuration](reference/configuration.md).
 
 ### Step 4: Create Required Directories
 

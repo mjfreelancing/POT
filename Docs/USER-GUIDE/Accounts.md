@@ -20,9 +20,8 @@ Accounts are the foundation of projections and dashboard totals. Each account ho
 
 - Balance: current account amount.
 - Reserved: protected amount you do not want to spend.
-- Accrued: amount set aside for the expense cycles currently in progress.
-- Arrears: amount owed for expense cycles whose due date has already passed without being settled.
-- Committed: accrued plus arrears — what the account balance is committed to cover.
+- Accrued, Arrears and Committed: what the balance is committed to cover. They are defined once in the
+  [glossary](../reference/glossary.md).
 - Available balance: amount left after the reserved and committed amounts are accounted for.
 - Daily Need: stable daily set-aside requirement derived from active obligations.
 - A bill due today is the current bill: it counts as accrued and is not arrears.

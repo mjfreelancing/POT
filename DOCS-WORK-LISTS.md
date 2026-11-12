@@ -14,16 +14,23 @@ Complete. Every item is corrected, in the `AUTHENTICATION.md`, server-guide, `AR
 
 ## W2 — Duplication
 
-### Duplication to consolidate
+Complete. Every topic has one authoritative home and the copies were removed rather than marked done:
 
-| Topic                                                 | Number of places            | Where                                                                                                                                                                                                                                                  |
-| ----------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Docker env-file setup                                 | 7                           | GETTING-STARTED, DOCKER-SETUP, Docker DEVELOPER, ARCHITECTURE, FIRST-TIME-SETUP, AUTHENTICATION (twice), LOCAL-SETUP. Consolidate to `Docs/reference/configuration.md`, with `Source/Docker/.env.development.template` as the one copy of the key list |
-| Ports                                                 | 10                          | ARCHITECTURE, DOCKER-SETUP, Docker DEVELOPER (three places), copilot-instructions, docker.instructions, the two `Data/*/README.md` files, LOCAL-SETUP, e2e.instructions, e2e/README                                                                    |
-| Accrued / Arrears / Committed / Available definitions | 7                           | ARCHITECTURE, server DEVELOPER, IMPLEMENTATION, FEATURES, three user-guide pages                                                                                                                                                                       |
-| Platform-admin bootstrap                              | 5                           | AUTHENTICATION, FIRST-TIME-SETUP, GETTING-STARTED, LOCAL-SETUP, Docker DEVELOPER                                                                                                                                                                       |
+| Topic                                                 | Surviving copy                                                                                                |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Health-check verification blocks                      | `Docs/DOCKER-SETUP.md` Option A steps                                                      |
+| CORS configuration                                    | server `DEVELOPER.md` CORS section                                                         |
+| Tenancy model                                         | server `DEVELOPER.md` Security (the model) and Multi-Tenancy & Query Filters (the mechanics) |
+| Income vs expense renewal                             | server `IMPLEMENTATION.md` Renewal Calculators                                             |
+| Docker env-file setup                                 | `Docs/reference/configuration.md`, with `Source/Docker/.env.development.template` as the key list |
+| Ports                                                 | `Docs/reference/ports-and-environments.md`                                                 |
+| Accrued / Arrears / Committed / Available definitions | `Docs/reference/glossary.md`, with `Docs/explanation/cashflow-model.md` for how they combine |
+| Platform-admin bootstrap                              | `Docs/FIRST-TIME-SETUP.md`; the other guides link to it                                    |
 
-The health-check verification blocks, the second CORS copy, the repeated tenancy model statements and the income/expense renewal sections are consolidated. Their entries are removed from the list above rather than marked done.
+Three intended exceptions: `.github/copilot-instructions.md`, `docker.instructions.md` and
+`e2e.instructions.md` keep the ports and env instructions inline, because an agent should not have to open
+a second file to act on a rule. Procedural how-tos keep the port a command needs at the point of use and
+link here for the rest.
 
 ### The document estate at the baseline
 
