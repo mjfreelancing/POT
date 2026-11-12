@@ -68,11 +68,10 @@ one home.
 - [Run the Docker stack](Docs/how-to/run-the-docker-stack.md) - The full stack in containers
 - [Run locally without Docker](Docs/how-to/run-locally-without-docker.md) - API and client on the host
 - [First-time setup](Docs/tutorials/first-time-setup.md) - Your first account and the first platform admin
-- [Features Documentation](Docs/FEATURES.md) - Detailed feature descriptions
+- [User Guide](Docs/user-guide/README.md) - What each feature does, and how to use it
 - [Authentication](Docs/explanation/authentication.md) - Sign-up, approval, sign-in, refresh and password reset
 - [Auth and sessions](Docs/reference/auth-and-sessions.md) - Endpoints, claims, cookies, session rows, permissions
 - [Architecture Overview](Docs/ARCHITECTURE.md) - Technical architecture
-- [User Guide](Docs/user-guide/) - Detailed feature walkthroughs
 - [Ports and environments](Docs/reference/ports-and-environments.md) - Every port, and what must agree
 - [Configuration](Docs/reference/configuration.md) - Env files and startup validation
 - [Glossary](Docs/reference/glossary.md) - Terms with a precise meaning
