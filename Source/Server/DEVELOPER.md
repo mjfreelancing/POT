@@ -1918,7 +1918,7 @@ internal sealed class CreateAccountService : ICreateAccountService
 
 **Service Pattern Key Elements:**
 
-1. **Constructor Dependency Injection**: All dependencies validated with `.WhenNotNull()`
+1. **Constructor Dependency Injection**: DI-resolved parameters are assigned directly. The container throws if a dependency cannot be resolved, so no null guard is needed; keep `.WhenNotNull()` only when the class can also be built by a factory that may pass `null`. The sample above, and the other samples in this guide, keep the guards the existing services were written with.
 2. **Entry Logging**: `_logger.LogCall(this)` logs method entry with class name
 3. **Tracking Scope**: `using (_repository.WithTracking())` enables change tracking for writes
 4. **Multi-Tenancy**: Resolve an id-taking target through a site-scoped repository method, so a target outside the caller's site reads as not-found rather than merely being refused

@@ -5,7 +5,7 @@ applyTo: "Source/Server/**"
 
 # Server (.NET / ASP.NET Core / EF Core)
 
-Run server commands from `Source/Server`. `.editorconfig` is the source of truth for formatting and analyzer style. Test conventions are in `.github/instructions/dotnet-tests.instructions.md`; AllOverIt helper preferences are in `.github/instructions/allsoverit-patterns.instructions.md`.
+Run server commands from `Source/Server`. `.editorconfig` is the source of truth for formatting and analyzer style. Test conventions are in `.github/instructions/dotnet-tests.instructions.md`; AllOverIt helper preferences are in `.github/instructions/alloverit-patterns.instructions.md`.
 
 ## Architecture
 

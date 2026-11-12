@@ -77,7 +77,7 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
 | Personal data in logs | Usernames and site names in about eleven message templates, and in call-logging arguments | Repository |
 | Source-generated logging | None; no `[LoggerMessage]` methods exist | Repository |
 | Tracing | None; no `ActivitySource`, OpenTelemetry or Application Insights package is referenced | Repository |
-| Logging rules for agents | Exception logging only | `.github/instructions/allsoverit-patterns.instructions.md` |
+| Logging rules for agents | Exception logging only | `.github/instructions/alloverit-patterns.instructions.md` |
 | Secrets | Secret values live outside the repository, in a platform store | ADR-0025 |
 
 ## Questions Discovery Must Answer

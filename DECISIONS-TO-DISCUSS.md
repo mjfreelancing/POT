@@ -35,7 +35,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 | DD-09 | Permission policies are string literals                                                         | Low (fails closed)  | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No                           |
 | DD-10 | DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not | Low (documentation) | A: keep scanning, correct the instructions                                                           | No                           |
 | DD-13 | Features import other features (and shared layers import features)                              | Low (structure)     | C: move auth and shared pieces into layers, enforce with lint                                        | No                           |
-| DD-15 | `WhenNotNull()` on injected dependencies: the server guide and the instructions disagree        | Low (consistency)   | A: keep the guards, correct the instructions                                                         | No                           |
 | DD-16 | No server health check in the prodlike compose stack                                            | Low (local only)    | B: readiness health check, client waits for it                                                       | No                           |
 | DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path)                     | Low (housekeeping)  | Per item, see brief                                                                                  | No                           |
 
@@ -224,26 +223,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **C. Move the cross-cutting pieces into layers, then enforce "no feature→feature" with lint.** The permission components and auth/access-token contexts, `sessionNotice` and `useClearSession` move to `concerns/auth`. `features/shared/sheets` moves to `components/`. The renew helpers move to `api/` or `concerns/`. Fix the reverse imports from `api/`, `components/` and `concerns/` at the same time. Effort M. Client only. Import moves, no behaviour change.
 - **Recommendation:** C. The reverse imports show `auth` is already used as a layer. Moving it makes the documented rule true, and lets a lint rule keep it true.
 - **Route if changed:** raise a PRD via the prd-discovery skill (client refactor; no server, contract or migration impact).
-
-> **Your call:**
-
----
-
-### DD-15 — `WhenNotNull()` on injected dependencies: the server guide and the instructions disagree
-
-- **Backlog row:** none.
-- **What the code does today:**
-  - The server guide's service pattern says "All dependencies validated with `.WhenNotNull()`" (`Source/Server/DEVELOPER.md:1875`). Its example matches `Pot.App/Features/Accounts/Create/CreateAccountService.cs:27-30`.
-  - `.github/instructions/allsoverit-patterns.instructions.md:18` (reworked 2026-10-03, commit `8140ff76`) says the opposite: "Constructor parameters resolved by DI need no null guard … Keep `WhenNotNull()` … only when the class is also created by a factory that may pass `null`."
-  - The code follows the guide. There are 356 `_x = x.WhenNotNull();` assignments in 157 non-test server files, against 25 plain `_x = x;` assignments (a few of which are not DI constructors).
-  - Removing the guards has no test cost: I found no constructor null-guard tests for services. The 63 "Should*Throw_When*…\_Null" tests cover method arguments, for example `Pot.App.Tests/Calculators/AccrualCalculatorFixture.cs:73`.
-- **Why it matters:** Agents read the instruction and write unguarded constructors, while reviewers and the guide expect guards. The result is a codebase that drifts into two styles, and review churn. Neither style changes runtime behaviour: the container never passes `null`.
-- **Options:**
-  - **A. The guide wins: keep `WhenNotNull()` on every injected dependency.** Change the instruction line. Effort S. Docs only. Matches about 94% of the existing code.
-  - **B. The instruction wins, without a sweep.** Change the guide, and leave existing guards in place. Effort S. Docs only. The codebase keeps both styles indefinitely.
-  - **C. The instruction wins, with a sweep.** Change the guide and remove the guards from about 157 files. Effort M (mechanical). No migration, contract or client change. A large diff for no behaviour change.
-- **Recommendation:** A. It matches the code, costs nothing at runtime, and still catches a `null` passed by a hand-written test or factory. If you made the instruction change on purpose on 2026-10-03, choose B instead and say so, and the ADR will record the reason.
-- **Route if changed:** A and B are docs changes made with the ADR. C needs a PRD via the prd-discovery skill.
 
 > **Your call:**
 

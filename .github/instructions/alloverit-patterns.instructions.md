@@ -15,7 +15,7 @@ These apply when `AllOverIt.Extensions` is available (via the `AllOverIt` NuGet 
 - Use `value.IsNullOrEmpty()` instead of `string.IsNullOrEmpty(value)`.
 - Use `value.IsNotNullOrEmpty()` instead of `!string.IsNullOrEmpty(value)` and `!string.IsNullOrWhiteSpace(value)`.
 - Guard runtime-nullable arguments with `filePath.WhenNotNull();`, not a manual `ArgumentNullException` throw.
-- Constructor parameters resolved by DI need no null guard: the container throws if a dependency cannot be resolved. Keep `WhenNotNull()` on a constructor parameter only when the class is also created by a factory that may pass `null`.
+- Constructor parameters resolved by DI need no null guard: the container throws if a dependency cannot be resolved. Keep `WhenNotNull()` on a constructor parameter only when the class is also created by a factory that may pass `null`. Existing services keep the guards they were written with.
 
 ## Validators (`AllOverIt.Validation`)
 

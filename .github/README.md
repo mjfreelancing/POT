@@ -16,7 +16,7 @@ Instructions for GitHub Copilot in this repository.
 | File | `applyTo` |
 | --- | --- |
 | `server.instructions.md` | `Source/Server/**` |
-| `allsoverit-patterns.instructions.md` | `Source/Server/**/*.cs` |
+| `alloverit-patterns.instructions.md` | `Source/Server/**/*.cs` |
 | `dotnet-tests.instructions.md` | `Source/Server/*Tests/**/*.cs` |
 | `aspnetcore-integration-tests.instructions.md` | `Source/Server/Pot.AspNetCore.Integration.Tests/**` |
 | `client.instructions.md` | `Source/Client/pot-react/**` |
