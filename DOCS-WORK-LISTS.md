@@ -49,7 +49,7 @@ link here for the rest.
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `README.md`                                                    | **Done:** links to the docs map and the ADR index added, and the setup, reference and tutorial documents are now listed.                                                                                                                                                                                                                      |
 | `Docs/ARCHITECTURE.md`                                         | Slim (section 7). Cashflow sections go to `explanation/cashflow-model.md`; assess related W4 decision topics before removing rationale. The test split is covered by the W4 test-strategy discussion. Setup steps are deleted (they duplicate the tutorial).                                                                                  |
-| `Docs/AUTHENTICATION.md`                                       | Split four ways (the content is listed below the table). Drop the large code snapshots: several describe the removed `User.RefreshToken` design.                                                                                                                                                                                              |
+| `Docs/AUTHENTICATION.md`                                       | **Done:** split four ways, and the 2,223-line original retired. The stale `User.RefreshToken` snapshots were dropped rather than moved. See the list below the table.                                                                                                                                                                         |
 | `Docs/GETTING-STARTED.md`                                      | **Moved** to `Docs/tutorials/getting-started.md`, the single entry point.                                                                                                                                                                                                                                                                     |
 | `Docs/DOCKER-SETUP.md`                                         | **Moved** to `Docs/how-to/run-the-docker-stack.md`. Its quick start has not yet merged into the tutorial.                                                                                                                                                                                                                                     |
 | `Docs/LOCAL-SETUP.md`                                          | **Moved** to `Docs/how-to/run-locally-without-docker.md`. Option B is still to be replaced with the `Data/Local Docker` stack.                                                                                                                                                                                                                |
@@ -67,14 +67,18 @@ link here for the rest.
 | `Source/Docker/DEVELOPER.md`                                   | Retain only operational guidance that is useful to maintain and not already obvious from compose files, scripts or Dockerfiles. Remove the three links to `Azure-Deployment-Notes.md`: the file stays private, so the links can never resolve for another reader.                                                                             |
 | `Data/Local Docker/README.md`, `Data/Seed Docker/README.md`    | Keep. Each describes its own stack. Their ports and purposes feed `reference/ports-and-environments.md`.                                                                                                                                                                                                                                      |
 
-`Docs/AUTHENTICATION.md` splits into:
+`Docs/AUTHENTICATION.md` split into:
 
 W4 rows 0027–0036 and 0063 are existing candidate topics to assess, not a commitment to write ADRs.
 
-- `explanation/authentication.md` (flows);
-- `reference/auth-and-sessions.md`;
-- two how-tos (platform admins; cookies and CORS);
-- the user-facing parts, which move to `user-guide/Security.md`.
+- `explanation/authentication.md` (flows) — **written**;
+- `reference/auth-and-sessions.md` — **written**;
+- `how-to/configure-platform-admins.md` and `how-to/configure-auth-cookies-and-cors.md` — **written**;
+- the user-facing parts, which merged into `user-guide/Security.md` — **done**.
+
+**Follow-up:** six PRDs still cite the retired file (`Docs/Future/PRD-0001`, `0002`, `0008`, `0026`, `0027`).
+Their prose is historical and stays as written, but the links are now dangling. Decide during the PRD move
+whether to repoint them at the split documents or leave them as records of what existed then.
 
 The bare four-digit references in this W3 mapping and the developer-guide classification below refer
 to W4 inventory rows, not ADR numbers. They identify candidate topics only; assign an ADR number only

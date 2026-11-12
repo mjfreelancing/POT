@@ -69,7 +69,8 @@ one home.
 - [Run locally without Docker](Docs/how-to/run-locally-without-docker.md) - API and client on the host
 - [First-time setup](Docs/tutorials/first-time-setup.md) - Your first account and the first platform admin
 - [Features Documentation](Docs/FEATURES.md) - Detailed feature descriptions
-- [Authentication & Security](Docs/AUTHENTICATION.md) - User signup, permissions, and security
+- [Authentication](Docs/explanation/authentication.md) - Sign-up, approval, sign-in, refresh and password reset
+- [Auth and sessions](Docs/reference/auth-and-sessions.md) - Endpoints, claims, cookies, session rows, permissions
 - [Architecture Overview](Docs/ARCHITECTURE.md) - Technical architecture
 - [User Guide](Docs/user-guide/) - Detailed feature walkthroughs
 - [Ports and environments](Docs/reference/ports-and-environments.md) - Every port, and what must agree

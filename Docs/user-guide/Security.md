@@ -7,6 +7,15 @@ POT keeps each site's financial data private to that site, keeps your site admin
 - **Accounts and sessions.** Passwords are stored only as salted one-way hashes, which cannot be read back. Changing your password ends every session that is signed in, including the current one, so you sign in again with the new password. A disabled account cannot sign in. Invitations, sign-ups and password resets use single-use codes that expire and accept only a limited number of attempts. Repeated requests are throttled, and when you are throttled you are told how long to wait before trying again.
 - **Not covered.** Repeated failed sign-in attempts are throttled, but an account is never locked out after a fixed number of failures.
 
+## What you can do
+
+- **Use a strong password** that meets the sign-up requirements, and let a password manager hold it.
+- **Verify your email promptly.** If the code does not arrive, check the spam folder before requesting another - a code is single use and expires after 15 minutes.
+- **Wait for approval.** A new account cannot sign in until an administrator approves it, so a sign-in attempt before then is not a mistake in your details.
+- **Change a temporary password immediately** after your first sign-in.
+- **Sign out when you finish**, especially on a shared or public device - signing out ends only that device's session, so your other devices stay signed in.
+- **Tell an administrator** if you see an account, role or invitation you do not recognise. Approvals and role changes are recorded.
+
 ---
 
 [Back to User Guide](README.md)

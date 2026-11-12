@@ -144,7 +144,7 @@ POT takes security seriously:
 - **Secure Password Requirements** - Enforce strong passwords
 - **Session Management** - Server-side sessions with per-device revocation and short-lived access tokens
 
-[View detailed Authentication & Security guide →](AUTHENTICATION.md)
+[View the security overview →](user-guide/Security.md) | [How authentication works →](explanation/authentication.md)
 
 ## Platform Administration
 
