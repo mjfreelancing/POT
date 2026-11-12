@@ -85,7 +85,7 @@ no log, so a failure from it is not diagnosable after the fact.
 ## Architecture
 
 ```
-Playwright (@1.59.1)
+Playwright (@1.62.1)
    ├─ webServer[0]: ASP.NET Core API  (dotnet run -c Release, http://127.0.0.1:5242)
    ├─ webServer[1]: Vite dev server   (http://127.0.0.1:5175, proxies /api -> 5242)
    └─ globalSetup: mail sink container (SMTP 1025, read back over HTTP on 1080)
@@ -119,13 +119,16 @@ Key contracts:
 - The server **rotates the refresh token on every `/api/auth/refresh`** — a refresh cookie is
   single-use. This is why each test must log in fresh (no worker-scoped shared auth state).
 - Canonical users: `e2e_admin`/`E2E_admin-password` (Admin, full access),
-  `e2e_viewer`/`E2E_viewer-password` (Viewer, read-only), and
+  `e2e_viewer`/`E2E_viewer-password` (Viewer, read-only),
   `e2e_pwchange`/`E2E_pwchange-password` (Viewer — dedicated identity so the
   user-settings password-change test can rotate its own credentials without
-  invalidating the shared admin session). The deletion suites consume none of
-  them: they provision the tenant they destroy (see "Destructive" below), which
-  is why the seed holds no throwaway identity for them. Platform admin
-  `58d1a6b2-bf25-40c1-b3d6-656ccf4a68b5`. Credentials live in `e2e/helpers/secrets.ts`.
+  invalidating the shared admin session), and
+  `e2e_quickactions`/`E2E_quickactions-password` (Admin on its own site, so the
+  whole-site quick actions do not disturb the shared admin site). The deletion
+  suites consume none of them: they provision the tenant they destroy (see
+  "Destructive" below), which is why the seed holds no throwaway identity for
+  them. Platform admin `58d1a6b2-bf25-40c1-b3d6-656ccf4a68b5`. Credentials live
+  in `e2e/helpers/secrets.ts`.
 
 ### Current `playwright.config.ts` values (2026-08-27)
 
@@ -397,4 +400,4 @@ when the client production build changes.
 - **Random full-matrix flakes**: almost always shared-stack contention. Check the Load
   Reduction note; re-run the matrix once (retries: 1) before assuming a code bug.
 - **Browser downloads / PWA**: the suite targets the dev server; export/download tests use
-  Playwright's `page.waitForEvent('download')` (see 8.7).
+  Playwright's `page.waitForEvent('download')`.

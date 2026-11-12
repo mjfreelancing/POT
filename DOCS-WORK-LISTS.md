@@ -4,23 +4,15 @@ Working lists for [DOCS-REORGANISATION-PLAN.md](DOCS-REORGANISATION-PLAN.md). Th
 agent needs while doing one workstream, and nothing a reader of the docs needs.
 
 **This file is disposable.** Delete a section when its workstream completes; delete the file when all
-four are done.
+five are done.
 
 ## W1 — Content to correct
 
-Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 and 9 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md` and client-guide passes; they are removed rather than marked done, so the numbers below skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
+Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 and 9 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md`, client-guide and E2E-docs passes; they are removed rather than marked done, so the numbers below skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
 
 **Fix when the file is reworked**
 
 8. **Server DEVELOPER:** the `WhenNotNull()` guidance at ~1921 conflicts with `allsoverit-patterns.instructions.md:18` (DD-15). Leave it until DD-15 is decided; it matches the code today.
-9. **E2E docs:**
-   - **Resolved 2026-11-04:** `e2e/README.md:10`, `e2e/AUTHORING.md:5` and the E2E ADR cited a non-existent `playwright-e2e.instructions.md`; all three now point at `e2e.instructions.md`.
-   - The fixture lists in `AUTHORING.md:31` and `e2e.instructions:42` are stale: they list three fixtures, but `e2e/fixtures/auth.ts` exports four (`quickActionsTest` is missing).
-   - `e2e/README.md:121–128` lists three canonical users; the seed has four (`e2e_quickactions` is missing).
-   - `e2e/README.md:398` refers to a "see 8.7" that matches nothing.
-   - Playwright and Vite versions are stale (`e2e/README.md:88` says Playwright 1.59.1; `package.json` has `^1.62.1`).
-   - **Resolved 2026-11-06 (DD-11, option A):** e2e.instructions:13 called prodlike a per-PRD completion gate, while the README (150–153) called it on-demand. The README now gives the per-PRD gate plus on demand, matching the instructions and skills, and ADR-0041 states the rule.
-   - e2e.instructions:67 says react-day-picker v9; the project uses v10.
 10. **Setup docs:**
     - Node minimum: 22.22.2 vs `>=22.22.0` vs "Node 24 is the minimum".
     - `.env.development`: resolved — `Source/Docker/.env.development.template` is now tracked, and the places that said the repository ships none are corrected. The key list lives in that file; the remaining duplicated copies are consolidated under W2 ("Docker env-file setup").
@@ -605,6 +597,42 @@ Two decisions were made with no PRD and are represented by W4 candidate rows 002
 - binding access tokens to their session, in commit `31c96313` (2026-10-17).
 
 ADR-0043:373 wrongly attributes the 422 change to PRD-0030 (Appendix C, site 9).
+
+---
+
+## W5 — Instructions vs ADR placement review
+
+Review `.github/instructions/` against the ADRs to decide, rule by rule, whether a rule has a decision
+behind it that belongs in an ADR, whether the instruction is restating decision rationale that should be
+a citation instead, or whether it is a genuine binding convention that stays as an instruction or a
+`Docs/standards/` rule document. The placement rule in [Docs/README.md](Docs/README.md) ("Where does X
+go?") is the target: a **convention** goes in a rule document, a **decision and its rationale** in an
+ADR, and the instruction file carries the condensed rule plus a citation — never the rationale.
+
+**Why:** several instruction files were written when decisions lived inline in the developer guides.
+Some now state a rule whose reason is only in an ADR, some restate a whole ADR section, and at least two
+contradict the code or each other (`server.instructions.md` DI section vs the server guide, and its
+`WhenNotNull` guidance vs `allsoverit-patterns.instructions.md`). Moving the decision material to ADRs
+leaves one home per fact and stops the two drifting apart.
+
+**Checklist per instruction file:**
+
+- [ ] For each rule, name the decision it enforces. If a consequential decision has no ADR, raise one
+      (W4's evidence rules apply; do not invent rationale).
+- [ ] If the instruction states rationale, an example or the alternatives, replace it with a citation of
+      the ADR and leave only the rule.
+- [ ] If a rule is a pure coding convention with no decision behind it, confirm it belongs in an
+      instruction (agent-facing) or a `Docs/standards/` rule document, and note which.
+- [ ] Where two instruction files disagree, or an instruction contradicts the code, decide which is
+      right — DD-10 and DD-15 in `DECISIONS-TO-DISCUSS.md` are the known cases.
+- [ ] Confirm `docs-check` still passes (every `ADR-NNNN` an instruction cites exists and is accepted).
+
+**Files in scope:** `allsoverit-patterns`, `aspnetcore-integration-tests`, `client-tests`, `client`,
+`docker`, `dotnet-tests`, `e2e`, `server` (all under `.github/instructions/`).
+
+**Done when:** every instruction cites the ADR or rule document its rules come from, no instruction
+restates rationale that lives in an ADR, and the known contradictions are resolved or recorded as open
+DDs.
 
 ---
 

@@ -29,7 +29,7 @@ one (see below), because a seeded identity can only be destroyed once per databa
 ## Authentication
 
 - `e2e/fixtures/auth.ts` exports `test` (admin), `viewerTest` (viewer), `pwChangeTest`
-  (e2e_pwchange). Each does ONE fresh login and gives BOTH `storageState` and `accessToken`.
+  (e2e_pwchange) and `quickActionsTest` (e2e_quickactions). Each does ONE fresh login and gives BOTH `storageState` and `accessToken`.
 - For API setup/cleanup use `accessToken` — never a second login (logins are the biggest CPU
   cost under parallel load). Do NOT share storage state across tests/workers (the refresh
   cookie rotates on every `/api/auth/refresh`).

@@ -122,6 +122,20 @@ numbering scheme or a fixed target count.
 and consequences, or a recorded reason why no ADR is appropriate. Related ADRs are easy to navigate as
 families, while each record remains about one decision.
 
+### W5 — Instructions vs ADR placement review
+
+**Does:** review `.github/instructions/` against the ADRs, rule by rule, and move decision material into
+ADRs: where an instruction states the reason, example or alternatives behind a rule, replace that with a
+citation of the ADR and leave only the rule; where a consequential decision behind a rule has no ADR,
+raise one (W4's evidence rules apply). A pure convention stays in an instruction or a
+`Docs/standards/` rule document. **Why:** several instructions were written when decisions lived inline
+in the developer guides, so some restate rationale that now has (or should have) an ADR, and at least two
+contradict the code or each other.
+
+**Done when:** every instruction cites the ADR or rule document its rules come from, no instruction
+restates rationale that lives in an ADR, and the known contradictions are resolved or recorded as open
+DDs. The checklist is the W5 section of `DOCS-WORK-LISTS.md`.
+
 ### Owner decisions
 
 Two items need your call and are listed at the end of `DOCS-WORK-LISTS.md`; they block a link fix in
@@ -165,10 +179,11 @@ commit.
 | Workstream                 | State                                                                                                                                                                                                                                    |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Foundations (v1 Phase 1)   | Done 2026-11-02: `docs-check` with 14 Pester tests, the ADR and PRD templates (with their skills), the docs map, the rule documents, `AGENTS.md`, and the skill changes. The seven meta records were removed when this plan replaced v1. |
-| W1 Truth pass              | In progress: `AUTHENTICATION.md`, the server guide, `ARCHITECTURE.md`, the user-guide/FEATURES text, `IMPLEMENTATION.md` and the client guide corrected (W1 items 1–7, 9, 14 and the server-guide claims block; item 8 reduced to the DD-15 line); pending owner review. |
+| W1 Truth pass              | In progress: `AUTHENTICATION.md`, the server guide, `ARCHITECTURE.md`, the user-guide/FEATURES text, `IMPLEMENTATION.md`, the client guide and the E2E docs corrected (items 1–7, 9, 14 and the server-guide claims block; item 8 reduced to the DD-15 line). Remaining: items 10–12. Pending owner review. |
 | W2 Dedup pass              | Not started.                                                                                                                                                                                                                             |
 | W3 Move and split          | Not started.                                                                                                                                                                                                                             |
 | W4 Decision-history review | In progress: criteria and initial candidate gaps updated in the working tree; pending owner review.                                                                                                                                      |
+| W5 Instructions vs ADR     | Not started: review each `.github/instructions/` file and move decision material into ADRs.                                                                                                                                              |
 
 ## Verifying a change
 
