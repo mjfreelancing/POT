@@ -171,87 +171,9 @@ This command will:
 
 > **First-time build:** The initial build can take several minutes as it installs dependencies and compiles both frontend and backend.
 
-### Step 2: Verify Services are Running
+### Step 2: Verify and Access the Application
 
-Check that all containers are running:
-
-```bash
-docker ps
-```
-
-You should see three running containers (container names → image names):
-
-- `pot-postgres` → `pot-prodlike-postgres` - PostgreSQL database
-- `pot-aspnet` → `pot-server:latest` - ASP.NET Core API
-- `pot-react` → `pot-client:latest` - React frontend (nginx)
-
-### Step 3: Access the Application
-
-#### 3.1 Verify the API
-
-Check that the API is responding:
-
-```powershell
-curl http://localhost:5241/_health   # PowerShell: curl is an alias for Invoke-WebRequest
-```
-
-Expected response should look something like this (PowerShell `Invoke-WebRequest` output):
-
-```
-StatusCode        : 200
-StatusDescription : OK
-Content           : Healthy
-RawContent        : HTTP/1.1 200 OK
-                    Pragma: no-cache
-                    Transfer-Encoding: chunked
-                    Cache-Control: no-store, no-cache
-                    Content-Type: text/plain
-                    Date: Sun, 09 Nov 2025 11:44:40 GMT
-                    Expires: Thu, 01 Jan 1970 00:00:00 GMT...
-Forms             : {}
-Headers           : {[Pragma, no-cache], [Transfer-Encoding, chunked], [Cache-Control, no-store, no-cache],
-                    [Content-Type, text/plain]...}
-Images            : {}
-InputFields       : {}
-Links             : {}
-ParsedHtml        : mshtml.HTMLDocumentClass
-RawContentLength  : 7
-```
-
-#### 3.2 Verify the Frontend
-
-Check that the frontend is responding:
-
-```powershell
-curl http://localhost:5175/health   # PowerShell: curl is an alias for Invoke-WebRequest
-```
-
-Expected response should look something like this (PowerShell `Invoke-WebRequest` output):
-
-```
-StatusCode        : 200
-StatusDescription : OK
-Content           : {104, 101, 97, 108...}
-RawContent        : HTTP/1.1 200 OK
-                    Connection: keep-alive
-                    Content-Length: 7
-                    Content-Type: application/octet-stream,text/plain
-                    Date: Sun, 09 Nov 2025 11:49:09 GMT
-                    Server: nginx/1.29.3
-
-                    healthy
-Headers           : {[Connection, keep-alive], [Content-Length, 7], [Content-Type,
-                    application/octet-stream,text/plain], [Date, Sun, 09 Nov 2025 11:49:09 GMT]...}
-RawContentLength  : 7
-```
-
-#### 3.3 Open the Application in Your Browser
-
-Navigate to:
-
-- **POT Application**: http://localhost:5175
-
-You should see the POT login/signup page.
+Both options start the same stack, so the checks are written once. Follow [Step 2](#step-2-verify-services-are-running) and [Step 3](#step-3-verify-and-access) under Option A.
 
 ### Stopping Services
 

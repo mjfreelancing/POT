@@ -3550,7 +3550,7 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 
 **Why expose these headers?**
 
-The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `location` is exposed so a `201 Created` carries the new resource's URL to cross-origin script as it does to any other caller (the client takes the id from the body, so nothing reads it today), `retry-after` so the client can read the 429 cooldown, and `X-Correlation-Id` so it can read the id to quote to support. The policy caches preflights for ten minutes; without `Access-Control-Max-Age`, Chromium caches them for only five seconds and nearly every JSON or `Authorization` request pays an extra `OPTIONS` round trip.
+The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `location` is exposed so a `201 Created` carries the new resource's URL to cross-origin script as it does to any other caller (the client takes the id from the body, so nothing reads it today), `retry-after` so the client can read the 429 cooldown, and `X-Correlation-Id` so it can read the id to quote to support. The policy caches preflights for ten minutes; without `Access-Control-Max-Age`, Chromium caches them for only five seconds and nearly every JSON or `Authorization` request pays an extra `OPTIONS` round trip. Without the exposed headers the browser blocks access to them, so export cannot determine the downloaded filename and fails silently.
 
 **Configuration (`appsettings.json`):**
 
@@ -5053,79 +5053,9 @@ Remove-Migration -Project Pot.Data -StartupProject Pot.Data.Migrations
 
 ---
 
-## CORS Configuration
+## Configuration Validation
 
-**Location:** `Pot.AspNetCore/Concerns/Cors/`
-
-POT uses a configuration-based CORS system that loads allowed origins from `appsettings.json`.
-
-### Configuration Setup
-
-```csharp
-// Pot.AspNetCore/Program.cs
-builder
-    .AddPotCors()  // Configures CORS from configuration
-    // ...
-
-app.UseCors();  // Must be before UseAuthentication/UseAuthorization
-```
-
-### CORS Policy
-
-```csharp
-// Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs
-public void Configure(CorsOptions options)
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy
-            // Allow frontend URLs from configuration
-            .WithOrigins(_corsConfiguration.GetAllowedOrigins().ToArray())
-
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-
-            // Required for authentication (cookies/tokens)
-            .AllowCredentials()
-
-            // Expose the download filename, a 201's resource URL, the 429 cooldown and the correlation id
-            .WithExposedHeaders(HeaderNames.ContentDisposition, HeaderNames.Location, HeaderNames.RetryAfter, CorrelationIdMiddleware.HeaderName)
-
-            // Cache preflights for ten minutes instead of Chromium's five-second default
-            .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
-    });
-}
-```
-
-### Why Expose `content-disposition`?
-
-The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `location` is exposed for the URL a `201 Created` returns, `retry-after` for the 429 cooldown, and `X-Correlation-Id` for the id to quote to support. The ten-minute preflight cache keeps most API calls from paying an extra `OPTIONS` round trip.
-
-**Without this configuration:**
-
-- Browser blocks access to `Content-Disposition` header
-- Frontend cannot determine downloaded filename
-- Export feature fails silently
-
-**With this configuration:**
-
-- Frontend can read `Content-Disposition: attachment; filename="export-2025-11-18.pot"`
-- Export downloads work correctly
-
-### Configuration File
-
-```json
-// appsettings.Development.json
-{
-  "Cors": {
-    "AllowedOrigins": "http://localhost:5175" // Vite dev server (delimited string, not an array)
-  }
-}
-```
-
-**Important:** The ASP.NET Core CORS policy cannot use `AllowAnyOrigin()` with `AllowCredentials()` - must specify explicit origins.
-
-**Startup validation:** The API validates its JWT, authentication-cookie, platform-admin, CORS, SMTP, and database options during startup in every environment. Each environment must provide values that pass its registered validators; invalid configuration prevents the API from starting. Platform-admin user IDs may be omitted, and authentication-cookie settings have defaults.
+The API validates its JWT, authentication-cookie, platform-admin, CORS, SMTP, and database options during startup in every environment. Each environment must provide values that pass its registered validators; invalid configuration prevents the API from starting. Platform-admin user IDs may be omitted, and authentication-cookie settings have defaults.
 
 ---
 
