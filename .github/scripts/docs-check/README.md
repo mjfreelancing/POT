@@ -40,11 +40,11 @@ you rarely need to run it by hand:
 pwsh ./.github/scripts/docs-check/docs-check.ps1
 ```
 
-| Mode | Flags | Effect |
-| --- | --- | --- |
-| Check | none | Reports errors; changes nothing. Exit code 1 when anything fails. |
-| Regenerate the index | `-Update` | Rewrites the generated block in `Docs/adr/README.md`, then checks everything else. |
-| Duplication report | `-ReportFacts` | Prints where each reference fact appears and how many documents repeat it. |
+| Mode                 | Flags          | Effect                                                                             |
+| -------------------- | -------------- | ---------------------------------------------------------------------------------- |
+| Check                | none           | Reports errors; changes nothing. Exit code 1 when anything fails.                  |
+| Regenerate the index | `-Update`      | Rewrites the generated block in `Docs/adr/README.md`, then checks everything else. |
+| Duplication report   | `-ReportFacts` | Prints where each reference fact appears and how many documents repeat it.         |
 
 ## Tests
 

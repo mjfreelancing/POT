@@ -7,11 +7,11 @@ only place the set is described; the guides link here.
 
 `Source/Docker/docker-compose-client-server.yml`, started by the `docker-start-client-server` task.
 
-| Service    | Container     | Host  | Container | Owner of the value                                                 |
-| ---------- | ------------- | ----- | --------- | ------------------------------------------------------------------ |
-| PostgreSQL | `pot-postgres` | 5444  | 5432      | compose `ports`; the image exposes 5432                             |
-| API        | `pot-aspnet`  | 5241  | 5241      | compose `ports`, `ASPNETCORE_URLS`, and the server Dockerfile `EXPOSE` |
-| Client     | `pot-react`   | 5175  | 80        | compose `ports`, nginx `listen 80`, and the client Dockerfile `EXPOSE` |
+| Service    | Container      | Host | Container | Owner of the value                                                     |
+| ---------- | -------------- | ---- | --------- | ---------------------------------------------------------------------- |
+| PostgreSQL | `pot-postgres` | 5444 | 5432      | compose `ports`; the image exposes 5432                                |
+| API        | `pot-aspnet`   | 5241 | 5241      | compose `ports`, `ASPNETCORE_URLS`, and the server Dockerfile `EXPOSE` |
+| Client     | `pot-react`    | 5175 | 80        | compose `ports`, nginx `listen 80`, and the client Dockerfile `EXPOSE` |
 
 Why these numbers:
 
@@ -25,21 +25,21 @@ Why these numbers:
 
 Addresses worth knowing in this stack:
 
-| What                  | URL                                    | Notes                    |
-| --------------------- | -------------------------------------- | ------------------------ |
-| Client                | `http://localhost:5175`                | Login page               |
-| Client health         | `http://localhost:5175/health`         | Served by nginx          |
-| API liveness          | `http://localhost:5241/_health`        | Runs no checks           |
-| API readiness         | `http://localhost:5241/_health/ready`  | Includes the database    |
-| API reference UI      | `http://localhost:5241/scalar`         | Development only         |
+| What             | URL                                   | Notes                 |
+| ---------------- | ------------------------------------- | --------------------- |
+| Client           | `http://localhost:5175`               | Login page            |
+| Client health    | `http://localhost:5175/health`        | Served by nginx       |
+| API liveness     | `http://localhost:5241/_health`       | Runs no checks        |
+| API readiness    | `http://localhost:5241/_health/ready` | Includes the database |
+| API reference UI | `http://localhost:5241/scalar`        | Development only      |
 
 ## Running without Docker
 
-| Process            | Port | Owner of the value                                                     |
-| ------------------ | ---- | ---------------------------------------------------------------------- |
-| API                | 5242 | `Pot.AspNetCore/Properties/launchSettings.json` (`applicationUrl`)      |
-| Vite dev server    | 5175 | `Source/Client/pot-react/package.json` (`vite --port 5175`)             |
-| Vite preview       | 5175 | the same file (`vite preview --port 5175`)                              |
+| Process         | Port | Owner of the value                                                 |
+| --------------- | ---- | ------------------------------------------------------------------ |
+| API             | 5242 | `Pot.AspNetCore/Properties/launchSettings.json` (`applicationUrl`) |
+| Vite dev server | 5175 | `Source/Client/pot-react/package.json` (`vite --port 5175`)        |
+| Vite preview    | 5175 | the same file (`vite preview --port 5175`)                         |
 
 The Vite dev server proxies `/api` to `http://localhost:5242` (`Source/Client/pot-react/vite.config.ts`),
 so a browser on 5175 reaches an API started with `dotnet run` without a CORS preflight being involved.
@@ -50,10 +50,10 @@ The API in this mode is on a different port from the containerised one precisely
 `Data/Local Docker` and `Data/Seed Docker` are single-container stacks used to inspect a dump and to
 author E2E seed data. Neither is part of the application stack.
 
-| Stack         | Container           | Host | Container | Image         |
-| ------------- | ------------------- | ---- | --------- | ------------- |
-| Local Docker  | `pot-local-postgres` | 5432 | 5432      | `postgres:13` |
-| Seed Docker   | `pot-seed-postgres`  | 5432 | 5432      | `postgres:13` |
+| Stack        | Container            | Host | Container | Image         |
+| ------------ | -------------------- | ---- | --------- | ------------- |
+| Local Docker | `pot-local-postgres` | 5432 | 5432      | `postgres:13` |
+| Seed Docker  | `pot-seed-postgres`  | 5432 | 5432      | `postgres:13` |
 
 Both use the standard port on purpose: they exist to be connected to by ordinary tools, and only one of
 them runs at a time.
@@ -63,12 +63,12 @@ them runs at a time.
 The dev matrix (`playwright.config.ts`) and the prodlike matrix (`playwright.prod.config.ts`) drive their
 own processes.
 
-| What                            | Port  | Where it is set                                        |
-| ------------------------------- | ----- | ------------------------------------------------------ |
-| API                             | 5242  | the Playwright `webServer` command (`--urls`)           |
-| Client                          | 5175  | the Playwright `webServer` (`npm run dev` / `preview`)  |
-| PostgreSQL (Testcontainers)     | 55432 | `playwright.globalSetup.ts`                             |
-| SMTP sink                       | 1025  | the `webServer` environment (`Smtp__Port`)              |
+| What                        | Port  | Where it is set                                        |
+| --------------------------- | ----- | ------------------------------------------------------ |
+| API                         | 5242  | the Playwright `webServer` command (`--urls`)          |
+| Client                      | 5175  | the Playwright `webServer` (`npm run dev` / `preview`) |
+| PostgreSQL (Testcontainers) | 55432 | `playwright.globalSetup.ts`                            |
+| SMTP sink                   | 1025  | the `webServer` environment (`Smtp__Port`)             |
 
 The harness uses 5242 while the E2E stack is up, so a Docker full stack on 5241 does not have to be
 stopped first.
@@ -77,11 +77,11 @@ stopped first.
 
 These values have to agree, and a change to one is a change to all of them:
 
-| Changing                 | Also update                                                                                   |
-| ------------------------ | --------------------------------------------------------------------------------------------- |
-| API port                 | compose `ports` and `ASPNETCORE_URLS`; the server Dockerfile `EXPOSE`; `JWT_ISSUER` and `JWT_AUDIENCE` in the env file; `CORS_ALLOWED_ORIGINS`; nginx `proxy_pass`; the Vite proxy target; the Playwright `webServer` |
-| Client port              | compose `ports`; `CORS_ALLOWED_ORIGINS`; the client npm scripts; the Playwright `webServer` and `baseURL` |
-| Database host port       | compose `ports` only, so long as the API keeps using the container port                        |
+| Changing           | Also update                                                                                                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API port           | compose `ports` and `ASPNETCORE_URLS`; the server Dockerfile `EXPOSE`; `JWT_ISSUER` and `JWT_AUDIENCE` in the env file; `CORS_ALLOWED_ORIGINS`; nginx `proxy_pass`; the Vite proxy target; the Playwright `webServer` |
+| Client port        | compose `ports`; `CORS_ALLOWED_ORIGINS`; the client npm scripts; the Playwright `webServer` and `baseURL`                                                                                                             |
+| Database host port | compose `ports` only, so long as the API keeps using the container port                                                                                                                                               |
 
 ## Where these numbers also appear
 

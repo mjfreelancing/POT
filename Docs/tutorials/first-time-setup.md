@@ -10,7 +10,6 @@ Now that POT is running, you need to create your first user account and configur
    ![Click Sign Up](images/first-time-setup/step01-01-select-sign-up.png)
 
 3. Fill in the registration form:
-
    - Username (must be globally unique)
    - Email address (must be valid - you'll receive verification code)
    - Password
@@ -134,7 +133,6 @@ You should see the status changed to `Enabled`:
    ![Logged in dashboard](images/first-time-setup/step05-01-logged-in.png)
 
 5. **Change your password immediately** for security:
-
    - Click on your username in the top-right corner
 
      ![Select username](images/first-time-setup/step05-02-select-username.png)
@@ -159,7 +157,6 @@ You should see the status changed to `Enabled`:
      ![Password changed success](images/first-time-setup/step05-06-success-message.png)
 
 6. **Verify platform admin access:**
-
    - Navigate to **Users** in the left sidebar (shown to anyone with `user:manage` or `user:view`; as the platform admin you have both)
    - You should see your account listed with "Admin" role and "Enabled" status
 

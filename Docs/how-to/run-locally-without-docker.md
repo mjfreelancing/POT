@@ -67,7 +67,6 @@ The migration application will connect to PostgreSQL, create the database if it 
    ```
 
    The application will:
-
    - Check if PostgreSQL is available
    - Create the `Pot` database if it doesn't exist
    - Apply all migrations to create tables and seed initial data
@@ -135,7 +134,6 @@ Create a configuration file for local development:
 > **Note:** This file is excluded from version control. Each developer must create their own copy with their credentials.
 
 3. **Update the configuration values:**
-
    - **Database**: Update `Password` if you changed it during PostgreSQL installation
    - **SMTP**: Configure with your email provider's settings (required for user email verification)
    - **JWT SecretKey**: Generate a random 128-character string

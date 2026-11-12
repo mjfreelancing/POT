@@ -104,11 +104,11 @@ Before running POT, you need to configure environment settings including databas
 
 Three environment files matter in `Source/Docker`, and two of them are tracked:
 
-| File                          | Tracked | Purpose                                                        |
-| ----------------------------- | ------- | -------------------------------------------------------------- |
-| `.env`                        | yes     | Compose project name and database name                          |
-| `.env.development.template`   | yes     | The starter overrides, and the only copy of the key list        |
-| `.env.development`            | no      | Your working copy, created from the template                    |
+| File                        | Tracked | Purpose                                                  |
+| --------------------------- | ------- | -------------------------------------------------------- |
+| `.env`                      | yes     | Compose project name and database name                   |
+| `.env.development.template` | yes     | The starter overrides, and the only copy of the key list |
+| `.env.development`          | no      | Your working copy, created from the template             |
 
 ### Step 2: Create `.env.development`
 
@@ -123,14 +123,14 @@ holds your local settings; never put a real credential in the tracked template.
 
 ### Step 3: Change what you need
 
-| Setting                 | What to change for a local Docker run                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `JWT_SECRET_KEY`        | Replace the placeholder with exactly 128 random characters before relying on the environment for anything beyond a boot   |
-| `SMTP_*`                | Replace the placeholders with real provider credentials before testing sign-up, password reset, invitations or reminders   |
-| `POSTGRES_PASSWORD`     | Only if you changed the password in `Source/Docker/Postgres/Dockerfile`; the two must match                                |
-| `CORS_ALLOWED_ORIGINS`  | Already correct for `http://localhost:5175`                                                                              |
-| `PLATFORM_ADMIN_USERIDS`| Leave empty for now; add your `RowId` after sign-up — see [First-Time Configuration](first-time-setup.md)                 |
-| `JWT_ISSUER`, `JWT_AUDIENCE` | Already correct for `http://localhost:5241`; they must equal the URL the API is reached at                          |
+| Setting                      | What to change for a local Docker run                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `JWT_SECRET_KEY`             | Replace the placeholder with exactly 128 random characters before relying on the environment for anything beyond a boot  |
+| `SMTP_*`                     | Replace the placeholders with real provider credentials before testing sign-up, password reset, invitations or reminders |
+| `POSTGRES_PASSWORD`          | Only if you changed the password in `Source/Docker/Postgres/Dockerfile`; the two must match                              |
+| `CORS_ALLOWED_ORIGINS`       | Already correct for `http://localhost:5175`                                                                              |
+| `PLATFORM_ADMIN_USERIDS`     | Leave empty for now; add your `RowId` after sign-up — see [First-Time Configuration](first-time-setup.md)                |
+| `JWT_ISSUER`, `JWT_AUDIENCE` | Already correct for `http://localhost:5241`; they must equal the URL the API is reached at                               |
 
 What each value does and which values must agree: [Configuration](../reference/configuration.md).
 

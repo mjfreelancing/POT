@@ -21,9 +21,9 @@ permissions that the tenant's own data holds. That model cannot answer two cases
 
 - A site with no usable administrator, which nobody inside the site can repair.
 - An operation that spans tenants, which by definition is not a tenant's business.
-Today `platform:manage` guards only the approvals routes: listing sign-ups awaiting approval in every
-site and deciding them. Repairing a site with no usable administrator, and the other cross-tenant
-operations, are planned in PRD-0027 and not delivered.
+  Today `platform:manage` guards only the approvals routes: listing sign-ups awaiting approval in every
+  site and deciding them. Repairing a site with no usable administrator, and the other cross-tenant
+  operations, are planned in PRD-0027 and not delivered.
 
 If platform authority were a role, whoever can administer roles in a site could grant it, and the
 tenant would be able to create an authority above itself.

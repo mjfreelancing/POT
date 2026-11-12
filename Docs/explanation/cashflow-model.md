@@ -9,10 +9,10 @@ terms are in the [glossary](../reference/glossary.md).
 An expense does not simply cost its amount on its due date. Between cycles the user is expected to be
 putting money aside, and POT measures that with two different figures:
 
-| Metric          | Code                    | Behaviour                                                                 |
-| --------------- | ----------------------- | ------------------------------------------------------------------------- |
-| Daily Accrual   | `DailyExpenseAccrual`   | The operational figure: what each remaining day of the current cycle needs. It varies as the cycle progresses. |
-| Daily Need      | `StableExpenseAccrual`  | The long-run figure: an average daily funding level that does not swing with where a cycle sits.        |
+| Metric        | Code                   | Behaviour                                                                                                      |
+| ------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Daily Accrual | `DailyExpenseAccrual`  | The operational figure: what each remaining day of the current cycle needs. It varies as the cycle progresses. |
+| Daily Need    | `StableExpenseAccrual` | The long-run figure: an average daily funding level that does not swing with where a cycle sits.               |
 
 Both are computed on the server by the accrual calculators, so the API and the client can never disagree
 about them.

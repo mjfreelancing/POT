@@ -48,12 +48,12 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
   logging may carry, so new code follows it without review having to catch it.
 - **Values are classified.** A proposed taxonomy, for discovery to confirm:
 
-  | Class | Examples | In telemetry |
-  | --- | --- | --- |
-  | Operational | row GUIDs, outcomes, statuses, counts, durations, reference codes | As-is |
-  | Personal | username, email address, display name, site name | Only redacted |
-  | User content | amounts, descriptions, notes | Never |
-  | Credential | passwords, temporary passwords, verification codes, tokens, keys, connection strings | Never |
+  | Class        | Examples                                                                             | In telemetry  |
+  | ------------ | ------------------------------------------------------------------------------------ | ------------- |
+  | Operational  | row GUIDs, outcomes, statuses, counts, durations, reference codes                    | As-is         |
+  | Personal     | username, email address, display name, site name                                     | Only redacted |
+  | User content | amounts, descriptions, notes                                                         | Never         |
+  | Credential   | passwords, temporary passwords, verification codes, tokens, keys, connection strings | Never         |
 
 - **Personal data is redacted in process** with `Microsoft.Extensions.Compliance.Redaction`, as a
   classified parameter of a source-generated `[LoggerMessage]` method. A keyed HMAC would keep a
@@ -67,18 +67,18 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
 
 ## What Is Known
 
-| Area | Fact | Source |
-| --- | --- | --- |
-| Logging providers | Console only. A single-line formatter in Development; JSON elsewhere, read from Container Apps into Log Analytics | `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs` (`AddLogging`) |
-| Request log | Framework HTTP logging: method, path, query, status, duration; no body or headers | ADR-0050 |
-| Correlation | `CorrelationIdLogEnricher` tags entries from `HttpContext`, so entries written by queued email or workers carry none | `Pot.AspNetCore/Concerns/Logging/CorrelationIdLogEnricher.cs` |
-| Call logging | 175 `LogCall` sites at `Information`; 35 pass an argument object | AllOverIt.Logging 9.4 |
-| Credentials in logs | Verification code (four sites), raw refresh token (one site); all through call-logging arguments | DD-08; `AuthService.cs:229` |
-| Personal data in logs | Usernames and site names in about eleven message templates, and in call-logging arguments | Repository |
-| Source-generated logging | None; no `[LoggerMessage]` methods exist | Repository |
-| Tracing | None; no `ActivitySource`, OpenTelemetry or Application Insights package is referenced | Repository |
-| Logging rules for agents | Exception logging only | `.github/instructions/alloverit-patterns.instructions.md` |
-| Secrets | Secret values live outside the repository, in a platform store | ADR-0025 |
+| Area                     | Fact                                                                                                                 | Source                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Logging providers        | Console only. A single-line formatter in Development; JSON elsewhere, read from Container Apps into Log Analytics    | `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs` (`AddLogging`) |
+| Request log              | Framework HTTP logging: method, path, query, status, duration; no body or headers                                    | ADR-0050                                                                      |
+| Correlation              | `CorrelationIdLogEnricher` tags entries from `HttpContext`, so entries written by queued email or workers carry none | `Pot.AspNetCore/Concerns/Logging/CorrelationIdLogEnricher.cs`                 |
+| Call logging             | 175 `LogCall` sites at `Information`; 35 pass an argument object                                                     | AllOverIt.Logging 9.4                                                         |
+| Credentials in logs      | Verification code (four sites), raw refresh token (one site); all through call-logging arguments                     | DD-08; `AuthService.cs:229`                                                   |
+| Personal data in logs    | Usernames and site names in about eleven message templates, and in call-logging arguments                            | Repository                                                                    |
+| Source-generated logging | None; no `[LoggerMessage]` methods exist                                                                             | Repository                                                                    |
+| Tracing                  | None; no `ActivitySource`, OpenTelemetry or Application Insights package is referenced                               | Repository                                                                    |
+| Logging rules for agents | Exception logging only                                                                                               | `.github/instructions/alloverit-patterns.instructions.md`                     |
+| Secrets                  | Secret values live outside the repository, in a platform store                                                       | ADR-0025                                                                      |
 
 ## Questions Discovery Must Answer
 

@@ -240,15 +240,15 @@ function Get-AdrRecord {
     }
 
     return [pscustomobject]@{
-        Id            = if ($values.ContainsKey('id')) { $values['id'] } else { $expectedId }
-        Number        = $number
-        Title         = if ($values.ContainsKey('title')) { $values['title'] } else { '' }
-        Status        = if ($values.ContainsKey('status')) { $values['status'] } else { '' }
-        Area          = if ($values.ContainsKey('area')) { $values['area'] } else { '' }
-        RelatedPrds   = $relatedPrds
-        FileName      = $fileName
-        Path          = $Path
-        DisplayPath   = $displayPath
+        Id          = if ($values.ContainsKey('id')) { $values['id'] } else { $expectedId }
+        Number      = $number
+        Title       = if ($values.ContainsKey('title')) { $values['title'] } else { '' }
+        Status      = if ($values.ContainsKey('status')) { $values['status'] } else { '' }
+        Area        = if ($values.ContainsKey('area')) { $values['area'] } else { '' }
+        RelatedPrds = $relatedPrds
+        FileName    = $fileName
+        Path        = $Path
+        DisplayPath = $displayPath
     }
 }
 
@@ -265,8 +265,8 @@ function Get-AdrRecords {
     # Every Markdown file here is an ADR except the guide, so a misnamed file is reported rather than
     # silently skipped. The template lives with the `adr` skill.
     $files = Get-ChildItem -Path $adrDirectory -Filter '*.md' -File |
-        Where-Object { $_.Name -ne 'README.md' } |
-        Sort-Object Name
+    Where-Object { $_.Name -ne 'README.md' } |
+    Sort-Object Name
 
     foreach ($file in $files) {
         $record = Get-AdrRecord -Path $file.FullName -Errors $Errors
@@ -360,9 +360,9 @@ function Format-AdrIndex {
         foreach ($prdId in $prdIds) {
             $links = @(
                 $prdRecords |
-                    Where-Object { $_.RelatedPrds -contains $prdId } |
-                    Sort-Object Number |
-                    ForEach-Object { "[$($_.Id)]($($_.FileName))" }
+                Where-Object { $_.RelatedPrds -contains $prdId } |
+                Sort-Object Number |
+                ForEach-Object { "[$($_.Id)]($($_.FileName))" }
             )
             $lines.Add("| ${prdId} | $($links -join ', ') |")
         }
@@ -582,10 +582,10 @@ function Test-BannedReferences {
 
     $checked = 0
     $files = Get-ChildItem -Path $sourceDirectory -File -Recurse |
-        Where-Object {
-            $script:BannedReferenceExtensions -contains $_.Extension.ToLowerInvariant() -and
-            $_.FullName -notmatch '[\\/](bin|obj|node_modules|dist)[\\/]'
-        }
+    Where-Object {
+        $script:BannedReferenceExtensions -contains $_.Extension.ToLowerInvariant() -and
+        $_.FullName -notmatch '[\\/](bin|obj|node_modules|dist)[\\/]'
+    }
 
     foreach ($file in $files) {
         $checked++
@@ -611,7 +611,7 @@ function Get-ReferenceFactReport {
         $fullPath = Join-RepoPath -Root $Root -RelativePath $directory
         if (Test-Path $fullPath) {
             $files += Get-ChildItem -Path $fullPath -Filter '*.md' -File -Recurse |
-                Where-Object { $_.FullName -notmatch '[\\/]fixtures[\\/]' }
+            Where-Object { $_.FullName -notmatch '[\\/]fixtures[\\/]' }
         }
     }
 

@@ -197,11 +197,11 @@ Advance a recurring item to its next due date, simulating the passage of time as
 
 ### Expenses and income differ in three ways
 
-| Aspect             | Expense                                                                                        | Income                    |
-| ------------------ | ---------------------------------------------------------------------------------------------- | ------------------------- |
-| Schedule carried   | `NextDue` and `AccrualStart`                                                                    | `NextDue` only            |
-| Accrual start      | The period boundary just entered for `AccrualPolicy.Automatic`, `null` for `AccrualPolicy.None` | None - income never accrues |
-| Projection effect  | The amount is subtracted on the due date                                                        | The amount is added       |
+| Aspect            | Expense                                                                                         | Income                      |
+| ----------------- | ----------------------------------------------------------------------------------------------- | --------------------------- |
+| Schedule carried  | `NextDue` and `AccrualStart`                                                                    | `NextDue` only              |
+| Accrual start     | The period boundary just entered for `AccrualPolicy.Automatic`, `null` for `AccrualPolicy.None` | None - income never accrues |
+| Projection effect | The amount is subtracted on the due date                                                        | The amount is added         |
 
 Frequency, end dates, the timing rule, one-time items and excluded items behave identically.
 

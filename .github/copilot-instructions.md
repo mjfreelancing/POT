@@ -30,16 +30,16 @@ Layout: .NET server in `Source/Server` (`pot.sln`), React/Vite client in `Source
 
 ## Running things
 
-| Task                          | Command / entry point                                                                                                                                             |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full stack up / down          | VS Code tasks `docker-start-client-server` / `docker-stop-client-server`                                                                                          |
-| Compose file                  | `Source/Docker/docker-compose-client-server.yml`                                                                                                                  |
-| Server (from `Source/Server`) | `dotnet run --project Pot.Data.Migrations`, `dotnet run --project Pot.AspNetCore`                                                                                 |
-| Server tests (all)            | `dotnet test pot.sln -c Debug --nologo --verbosity minimal` from `Source/Server`                                                                                  |
-| Targeted server tests         | `dotnet test <Project>/<Project>.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"` from `Source/Server` (prefer this over file-path-based test discovery) |
-| Server coverage               | `Source/Server/code_coverage.ps1` or task `server-run-test-coverage`                                                                                              |
+| Task                          | Command / entry point                                                                                                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full stack up / down          | VS Code tasks `docker-start-client-server` / `docker-stop-client-server`                                                                                                                                |
+| Compose file                  | `Source/Docker/docker-compose-client-server.yml`                                                                                                                                                        |
+| Server (from `Source/Server`) | `dotnet run --project Pot.Data.Migrations`, `dotnet run --project Pot.AspNetCore`                                                                                                                       |
+| Server tests (all)            | `dotnet test pot.sln -c Debug --nologo --verbosity minimal` from `Source/Server`                                                                                                                        |
+| Targeted server tests         | `dotnet test <Project>/<Project>.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"` from `Source/Server` (prefer this over file-path-based test discovery)                                       |
+| Server coverage               | `Source/Server/code_coverage.ps1` or task `server-run-test-coverage`                                                                                                                                    |
 | EF Core migration             | `dotnet ef migrations add <Name> --project Pot.Data --startup-project Pot.Data.Migrations` from `Source/Server` — only with a developer-approved name, never one you invent (see the working agreement) |
-| Client tests                  | `npm run test` (`npm run test:ui` for UI mode) from `Source/Client/pot-react`                                                                                     |
+| Client tests                  | `npm run test` (`npm run test:ui` for UI mode) from `Source/Client/pot-react`                                                                                                                           |
 
 Ports: client `5175`, API `5241` (Docker), Postgres host `5444`. Non-Docker backend used by the Vite dev proxy is `5242` (`/api` is proxied there; alias `@` maps to `src`). Health: API `/_health`, client `/health`.
 
