@@ -5318,6 +5318,10 @@ A bill due today is the current bill: it accrues in full and is **not** counted 
 | `dotnet ef database update <MigrationName> --project Pot.Data --startup-project Pot.Data.Migrations` | Rollback to specific migration                                                     |
 | `dotnet run` from `Pot.Data.Migrations`                                                              | Run migrations console app; it reads `appsettings.json` from the working directory |
 
+> **Warning:** starting the migrations console app applies every pending migration before it does anything
+> else, and several migrations drop tables and columns. Point it only at a database you mean to migrate;
+> to check the runner itself, use a throwaway database.
+
 ### Testing & Quality
 
 | Command                                       | Description                                                             |

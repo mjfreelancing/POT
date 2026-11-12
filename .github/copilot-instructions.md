@@ -15,7 +15,8 @@ Layout: .NET server in `Source/Server` (`pot.sln`), React/Vite client in `Source
 - Before an architectural change, read `Docs/adr/README.md`. Do not contradict an accepted ADR without asking. A change that makes a new architectural decision adds a proposed ADR in the same change.
 - Never remove existing comments. If one looks out of date, ask before changing it (spelling fixes are fine).
 - Never generate EF Core migrations unless explicitly asked; after editing entities or schema-impacting models, ask the developer to add a migration and review it — `Running things` has the command.
-- Never touch `Source/Docker/postgres-data/**`.
+- Never run the migrations console app (`Pot.Data.Migrations`) against a database without explicit approval. Starting it applies every pending migration before it does anything else, and some migrations drop tables and columns, so pointing it at a database to "check" it can rewrite or destroy data. To verify the runner itself, create a throwaway database for the test.
+- Never touch `Source/Docker/postgres-data/**` or any `Data/*/postgres-data/**` directly — do not delete, edit or copy over it. It holds real database data that the stacks mount; work with it through the compose stacks.
 - Never run a git command that changes the repository or working tree (including `git mv`, `git rm`, `git add`, `git stash`, `git checkout`, `git restore`, `git reset`, `git commit` and `git push`) without the user's explicit approval. Read-only commands (`git status`, `git diff`, `git log`, `git show`, `git blame`) are fine. The user reviews code changes and stages/commits themselves; make edits in the working tree only. Rename or delete files with ordinary file operations rather than their git equivalents, and ask first if a git write is genuinely needed.
 
 ## Code style (all languages)
