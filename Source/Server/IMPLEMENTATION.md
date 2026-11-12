@@ -8,8 +8,7 @@ This document provides detailed technical documentation for the POT (Personal Or
 
 - [Pot.App Project](#potapp-project)
   - [AccrualCalculator](#accrualcalculator)
-  - [ExpenseRenewalCalculator](#expenserenewalcalculator)
-  - [IncomeRenewalCalculator](#incomerenewalcalculator)
+  - [Renewal Calculators](#renewal-calculators)
   - [ProjectionsService](#projectionsservice)
 
 ---
@@ -84,11 +83,11 @@ When a recurring expense is due, it immediately begins accruing for the next per
 **Example:** Monthly rent of $1200 due Jan 31:
 
 - On Jan 31: `Accrued = $1200` (full amount), expense is "paid"
-- `NextDue` advances to Feb 28 (28 days away - see [Month-End Date Behavior](#month-end-date-behavior) in ExpenseRenewalCalculator)
+- `NextDue` advances to Feb 28 (28 days away - see [Month-end drift](#month-end-drift) under [Renewal Calculators](#renewal-calculators))
 - New `dailyAccrual = $1200 / 28 = $42.86/day`
 - On Feb 1: `Accrued = $42.86` (1 day × $42.86/day)
 
-⚠️ **Note:** This expense will remain on the 28th for all subsequent months due to month-end date drift (see [ExpenseRenewalCalculator](#expenserenewalcalculator) documentation).
+⚠️ **Note:** This expense will remain on the 28th for all subsequent months due to month-end drift (see [Renewal Calculators](#renewal-calculators)).
 
 ### One-Time Expense Handling
 
@@ -186,422 +185,101 @@ Expenses with `AccrualPolicy.None` contribute 0 to `TotalExpenseAccrued`, `Daily
 
 ---
 
-## ExpenseRenewalCalculator
+## Renewal Calculators
 
-**Location:** `Pot.App/Calculators/ExpenseRenewalCalculator.cs`
+**Locations:** `Pot.App/Calculators/ExpenseRenewalCalculator.cs` and `IncomeRenewalCalculator.cs`, with the renewal rules in the pure `ExpenseRenewalFold` and `IncomeRenewalFold`.
+
+Expenses and income renew by the same rules, so they are documented once. The calculator adapts the entity graph to the fold and writes the folded cursor back, because a schedule advance is a fact worth persisting; the fold holds the rules and mutates nothing.
 
 ### Purpose
 
-Advances recurring expenses to their next due date, simulating the passage of time as expenses are "paid" and renewed for the next billing period.
+Advance a recurring item to its next due date, simulating the passage of time as items are settled and rescheduled. Renewal moves the schedule only: it changes no balance, and for an expense it moves the accrual cursor rather than computing an accrual.
 
-The renewal calculator is responsible for moving recurring expenses forward in time. When an expense becomes due, it needs to be "paid" and then scheduled for the next occurrence. This calculator handles the scheduling logic without modifying balances or accruals (those are handled separately).
+### Expenses and income differ in three ways
 
-### Core Logic
+| Aspect             | Expense                                                                                        | Income                    |
+| ------------------ | ---------------------------------------------------------------------------------------------- | ------------------------- |
+| Schedule carried   | `NextDue` and `AccrualStart`                                                                    | `NextDue` only            |
+| Accrual start      | The period boundary just entered for `AccrualPolicy.Automatic`, `null` for `AccrualPolicy.None` | None - income never accrues |
+| Projection effect  | The amount is subtracted on the due date                                                        | The amount is added       |
 
-The renewal calculator accepts a `RenewalMode` parameter that determines the renewal behavior:
+Frequency, end dates, the timing rule, one-time items and excluded items behave identically.
 
-**Future Mode** (for advancing future items to mark as paid early):
+### Renewal modes
 
-- Advances each expense exactly ONCE to its next period
-- Does not use a while loop - single advancement only
-- Used when user wants to manually mark future items as "paid early"
-- Example: Marking March rent as paid in February
+Both calculators take a `RenewalMode`:
 
-**Overdue Mode** (for catching up overdue items or projections):
+- **`RenewalMode.Future`** advances an item exactly once, so a user can settle a future occurrence early - marking March rent as paid in February, or an expected March salary as received. A renewed expense's `AccrualStart` becomes the as-of date, because the period it has just entered began when it was settled.
+- **`RenewalMode.Overdue`** advances repeatedly while the next due date is on or before the as-of date. It is the mode the projection loop uses, and the one a manual renew uses to catch up.
 
-- Advances expenses repeatedly until caught up with `asOfDate`
-- Uses a while loop: `while (nextDue <= asOfDate)`
-- Used for automatic renewal of overdue items and for projections
-- Example: Advancing weekly expense that's 3 weeks overdue
+### Frequency calculation
 
-For each expense (regardless of mode):
+Days to the next occurrence come from `FrequencyExtensions.GetDaysToNext`:
 
-1. Calculate days to next occurrence based on `Frequency` and `FrequencyCount`
-2. Add those days to `NextDue` to get the new due date
-3. Update `AccrualStart` to the old `NextDue` (expense starts accruing from when it was paid)
-4. For Overdue mode: Repeat until `NextDue` is in the future (beyond `asOfDate`)
+- **Days:** `FrequencyCount` days (every 3 days = 3)
+- **Weeks:** `FrequencyCount × 7` days (bi-weekly = 2 × 7 = 14)
+- **Months:** `DateOnly.AddMonths(frequencyCount)`
+- **EndOfMonth:** `DateOnly.AddMonths(frequencyCount)`, then the last day of that month (Jan 31 → Feb 28 → Mar 31 → Apr 30), so it does not suffer the drift below
+- **Years:** `DateOnly.AddYears(frequencyCount)`
+- **OneTime:** has no next occurrence and is rejected before this point
 
-### Frequency Calculation
+For example, `Weeks` × 2 is bi-weekly, `Months` × 1 monthly, `Months` × 3 quarterly, `Months` × 6 semi-annually and `Years` × 1 annually.
 
-The number of days to add is determined by `Frequency` and `FrequencyCount`:
+### Month-end drift
 
-- **Days:** `FrequencyCount` days (e.g., every 3 days = 3)
-- **Weeks:** `FrequencyCount × 7` days (e.g., bi-weekly = 2 × 7 = 14)
-- **Months:** Uses .NET's `DateOnly.AddMonths()` - see [Month-End Date Behavior](#month-end-date-behavior) below
-- **End of Month:** Advances by `frequencyCount` months and lands on the last day of that month (for example, Jan 31 → Feb 28 → Mar 31 → Apr 30), so it does not suffer the months-only date drift below
-- **Years:** Uses .NET's `DateOnly.AddYears()` - see [Leap Year Date Behavior](#leap-year-date-behavior-yearly-frequency) below
+A monthly item due on the 29th, 30th or 31st that renews through a shorter month lands on the last valid day of that month and never returns to its original day:
 
-**Examples:**
+1. **Jan 31** → Feb 28 (February has 28 days in a non-leap year)
+2. **Feb 28** → Mar 28 (adding a month from the 28th keeps the 28th)
+3. **Mar 28** → Apr 28, and every later month
+4. **Stuck on the 28th** - it never returns to the 31st
 
-- `Frequency.Weeks`, `FrequencyCount=2`: Every 2 weeks (bi-weekly)
-- `Frequency.Months`, `FrequencyCount=1`: Monthly
-- `Frequency.Months`, `FrequencyCount=3`: Quarterly
-- `Frequency.Months`, `FrequencyCount=6`: Semi-annually
-- `Frequency.Years`, `FrequencyCount=1`: Annually
+`DateOnly.AddMonths` clamps to the last valid day, and every later addition starts from the clamped date. An item starting on the 30th drifts the same way, and one starting on the 29th drifts to the 28th in a non-leap year. A user who needs the original day must correct the next due date once the drift happens; `EndOfMonth` is the frequency for a schedule that should stay on the month end.
 
-### Month-End Date Behavior
+Covered by `Should_Handle_Month_End_Dates_Starting_Jan_31_With_Multiple_Renewals` and `Should_Handle_Month_End_31st_Renewing_Twice_Through_February`, in both the expense and income fixtures.
 
-⚠️ **IMPORTANT:** Monthly frequencies exhibit date drift behavior due to .NET's `AddMonths` implementation.
+### Leap-year drift
 
-**The Problem:**
-When an expense due on the **29th, 30th, or 31st** renews through a shorter month (like February), the date permanently drifts to the last valid day of that month and **never returns to the original day**.
+A yearly item due on 29 February drifts to 28 February at the first non-leap year and never returns, even in a later leap year:
 
-**Example: Expense due on January 31st**
+1. **29 Feb 2024** → 28 Feb 2025 (2025 has no 29 February)
+2. **28 Feb 2025** → 28 Feb 2026 (adding a year from the 28th keeps the 28th)
+3. **28 Feb 2027** → 28 Feb 2028, a leap year that still stays on the 28th
 
-1. **Jan 31** → Feb 28 (Feb only has 28 days in non-leap years)
-2. **Feb 28** → Mar 28 (AddMonths from 28th stays on 28th)
-3. **Mar 28** → Apr 28 (continues on 28th)
-4. **Forever stuck on 28th** - will never return to 31st
+`DateOnly.AddYears` clamps for the same reason, and later additions start from the clamped date. Covered by `Should_Handle_Leap_Year_In_Yearly_Frequency` in both the expense and income fixtures.
 
-**Why This Happens:**
+### Timing rule: an item due on the as-of date is renewed
 
-- `FrequencyExtensions.GetDaysToNext()` uses `DateOnly.AddMonths(frequencyCount)`
-- When adding months to Jan 31, .NET returns Feb 28 (the last valid day)
-- Subsequent additions are from Feb 28, so the date stays on 28th
+`RenewalMode.Overdue` advances every occurrence on or before the as-of date, and that includes one due exactly on it. What the caller must not do is fold the renewal before settling that occurrence: the projection loop measures the day's due rows against the cursor as it stands at the start of the day and folds the renewal in afterwards (`AccountProjectionState`), so the payment is counted on its own date and the schedule then moves on. A caller that folds first would measure the item against the next period.
 
-**Real-World Impact:**
+For a monthly rent due Jan 31, the projection reads:
 
-- An expense starting on Jan 31 will be due on the 28th for all subsequent months (except Jan)
-- An expense starting on Jan 30 drifts to Feb 28, then stays on 28th
-- An expense starting on Jan 29 drifts to Feb 28 in non-leap years, then stays on 28th
+- Jan 30: `NextDue = Jan 31`, nothing is due and nothing advances
+- Jan 31: the rent is paid, then `NextDue` advances to Feb 28
+- Feb 1: `NextDue = Feb 28`, nothing is due
 
-**Tested and Documented:**
-This behavior is validated by comprehensive tests:
+Covered by `Should_Advance_Expense_Due_Today`, `Should_Advance_Income_Due_Today` and the fold fixtures.
 
-- `ExpenseRenewalCalculatorFixture.Should_Handle_Month_End_Dates_Starting_Jan_31_With_Multiple_Renewals`
-- `ExpenseRenewalCalculatorFixture.Should_Handle_Month_End_31st_Renewing_Twice_Through_February`
+### End dates
 
-**User Guidance:**
-Users should be aware that monthly expenses/income starting on the 29th-31st will shift to the 28th after February. The user will need to manually update the next due date when this occurs.
+An item may carry an optional `EndDate`. Once `NextDue` has reached it the item does not renew, and a step that would land beyond it is not taken, so the schedule stops at the last occurrence inside the window:
 
-### Leap Year Date Behavior (Yearly Frequency)
+- The renewal is refused outright when `NextDue >= EndDate`
+- Inside the loop, an advance to a date after `EndDate` breaks out and the item keeps its current `NextDue`
 
-⚠️ **IMPORTANT:** Yearly frequencies exhibit date drift behavior when renewing from leap year dates (Feb 29).
+For a monthly subscription ending March 31 that started on Jan 31: February renews it to Mar 28, and the March renewal would land on Apr 28, so it stops at `NextDue = Mar 28`. The item is still paid on that date; it simply never advances again. It also shows the [month-end drift](#month-end-drift) above - the original 31st became the 28th.
 
-**The Problem:**
-When an expense due on **February 29th** (leap year) renews to a non-leap year, the date permanently drifts to February 28th and **never returns to February 29th** even in subsequent leap years.
+### One-time and excluded items
 
-**Example: Expense due on February 29, 2024 (leap year)**
+An item with `Frequency.OneTime`, or one with `ExcludeFromCalcs` set, does not renew; the fold returns the cursor unchanged. A one-time item is expected to be removed once it is settled, or left for the other calculations to ignore. An excluded item takes no part in projections or accruals, so its schedule never needs to move.
 
-1. **Feb 29, 2024** → Feb 28, 2025 (2025 is not a leap year, so Feb 29 doesn't exist)
-2. **Feb 28, 2025** → Feb 28, 2026 (AddYears from 28th stays on 28th)
-3. **Feb 28, 2026** → Feb 28, 2027 (continues on 28th)
-4. **Feb 28, 2027** → Feb 28, 2028 (2028 IS a leap year, but stays on 28th)
-5. **Forever stuck on Feb 28** - will never return to Feb 29, even in leap years
+### Loop behaviour
 
-**Why This Happens:**
+`RenewalMode.Overdue` loops until the next due date is past the as-of date. It is a loop rather than a single step because an item can be several occurrences behind - a weekly expense three weeks overdue - and because a projection walks a long window, in which a monthly item renews twelve times over a year of forecast days. The calculator is called for each projected day, so the schedule advances as the window walks and each balance is updated as items are settled on their due dates. `RenewalMode.Future` never loops.
 
-- `FrequencyExtensions.GetDaysToNext()` uses `DateOnly.AddYears(frequencyCount)`
-- When adding years to Feb 29, 2024, .NET returns Feb 28, 2025 (the last valid day in non-leap years)
-- Subsequent additions are from Feb 28, so the date stays on 28th permanently
+### Accrual after renewal (expenses)
 
-**Real-World Impact:**
-
-- An expense starting on Feb 29 will be due on Feb 28 for all subsequent years (including leap years)
-
-**Tested and Documented:**
-This behavior is validated by tests:
-
-- `ExpenseRenewalCalculatorFixture.Should_Handle_Leap_Year_In_Yearly_Frequency`
-- `IncomeRenewalCalculatorFixture.Should_Handle_Leap_Year_In_Yearly_Frequency`
-
-**User Guidance:**
-Users should be aware that yearly expenses/income starting on Feb 29 will permanently shift to Feb 28 after the first renewal. The user will need to manually update the next due date when this occurs.
-
-### ⚠️ CRITICAL Timing Rule
-
-**Expenses are NOT renewed if `NextDue == asOfDate`**
-
-The while loop condition is: `while (nextDue <= asOfDate)`
-
-But expenses due EXACTLY on `asOfDate` are skipped because:
-
-- They are considered "still due" on that date
-- For projections, they need to be paid (subtracted from Balance) on that date
-- If we advanced them before processing the payment, the projection would be incorrect
-- They will be renewed on the NEXT day's processing
-
-**Example timeline for monthly rent due Jan 31:**
-
-- Jan 30 processing: `NextDue = Jan 31` (future), no renewal
-- Jan 31 processing: `NextDue = Jan 31` (today), **SKIP renewal** (expense is paid on this date)
-- Feb 1 processing: `NextDue = Jan 31` (past), **NOW advance** to Feb 28
-
-### End Date Handling
-
-Expenses can have an optional `EndDate`. When present:
-
-- Renewal stops if `NextDue` would advance beyond `EndDate`
-- Check: `if (nextDue <= endDate)` before updating `NextDue`
-- Once `NextDue >= EndDate`, the expense is effectively "finished" and won't renew again
-
-**Example:** Monthly subscription ending March 31, originally starting on Jan 31
-
-- Feb 28: renews to Mar 28 (within end date) - **already drifted from 31st to 28th**
-- Mar 28: would renew to Apr 28, but Apr 28 > Mar 31, so **NO renewal**
-- Expense remains at `NextDue = Mar 28`, will be paid but not renewed
-
-⚠️ **Note:** This expense originally started on the 31st but drifted to the 28th after February (see [Month-End Date Behavior](#month-end-date-behavior) above).
-
-### One-Time Expenses
-
-Expenses with `Frequency.OneTime` are explicitly skipped:
-
-```csharp
-if (expense.Frequency == Frequency.OneTime) continue;
-```
-
-One-time expenses should not renew. After they're paid on their `NextDue` date, they should be deleted from the system, or excluded from future calculations (handled by other parts of the application).
-
-### Excluded Expenses
-
-Expenses with `ExcludeFromCalcs = true` are skipped:
-
-```csharp
-if (expense.ExcludeFromCalcs) continue;
-```
-
-These expenses are excluded from projections and accruals, so they don't need renewal logic.
-
-### Accrual State After Renewal
-
-When an expense is renewed:
-
-1. `AccrualStart` is updated to the old `NextDue`
-2. `NextDue` is advanced to the next occurrence
-
-Nothing else is written for accrual purposes. Renewal moves the cursor the accrual calculation reads, so the next read reports the new cycle from the advanced schedule.
-
-### Projection Usage
-
-During financial projections, this calculator is called for each projected day:
-
-1. Process all expenses due on or before current projection date
-2. Advance any that are past due
-3. This simulates the passage of time day by day
-4. Each account's balance is updated as expenses are "paid" on their due dates
-
-### Loop Behavior
-
-The while loop (used in **Overdue mode only**) handles cases where multiple renewals are needed:
-
-```csharp
-while (nextDue <= asOfDate)
-```
-
-This can happen when:
-
-- The system hasn't been updated in a long time (e.g., weekly expense that's 3 weeks overdue)
-- Projections span long periods (e.g., projecting 365 days means monthly expenses renew 12 times)
-
-The loop continues until `NextDue` is in the future relative to `asOfDate`.
-
-**Note:** Future mode does NOT use a while loop - it advances exactly once.
-
----
-
-## IncomeRenewalCalculator
-
-**Location:** `Pot.App/Calculators/IncomeRenewalCalculator.cs`
-
-### Purpose
-
-Advances recurring income sources to their next due date, simulating the passage of time as income is received and scheduled for the next payment period.
-
-The income renewal calculator is the counterpart to `ExpenseRenewalCalculator`, handling the scheduling of recurring income (salary, dividends, interest, etc.). When income becomes due, it needs to be renewed so it is scheduled for the next occurrence.
-
-### Core Logic
-
-The renewal calculator accepts a `RenewalMode` parameter that determines the renewal behavior:
-
-**Future Mode** (for advancing future items to mark as received early):
-
-- Advances each income exactly ONCE to its next period
-- Does not use a while loop - single advancement only
-- Used when user wants to manually mark future items as "received early"
-- Example: Marking expected March salary as received in February
-
-**Overdue Mode** (for catching up overdue items or projections):
-
-- Advances income repeatedly until caught up with `asOfDate`
-- Uses a while loop: `while (nextDue <= asOfDate)`
-- Used for automatic renewal of overdue items and for projections
-- Example: Advancing monthly salary that's 3 months overdue
-
-For each income (regardless of mode):
-
-1. Calculate days to next occurrence based on `Frequency` and `FrequencyCount`
-2. Add those days to `NextDue` to get the new due date
-3. For Overdue mode: Repeat until `NextDue` is in the future (beyond `asOfDate`)
-
-### Key Difference from Expenses
-
-Unlike expenses, income does NOT have:
-
-- `AccrualStart` (income doesn't gradually accrue like expenses)
-- `Accrued` tracking (no need to track partial income before it's received)
-
-Income is simpler: it either has been received (past due dates) or will be received (future due dates). There's no gradual accumulation or "available funds" adjustment needed for income.
-
-### Frequency Calculation
-
-Same as `ExpenseRenewalCalculator`, days to add are determined by `Frequency` and `FrequencyCount`:
-
-- **Days:** `FrequencyCount` days
-- **Weeks:** `FrequencyCount × 7` days (e.g., bi-weekly salary = 2 × 7 = 14)
-- **Months:** Uses .NET's `DateOnly.AddMonths()` - see [Month-End Date Behavior](#month-end-date-behavior-1) below
-- **End of Month:** Advances by `frequencyCount` months and lands on the last day of that month, so it does not suffer the months-only date drift below
-- **Years:** Uses .NET's `DateOnly.AddYears()` - see [Leap Year Date Behavior](#leap-year-date-behavior-yearly-frequency-1) below
-
-**Examples:**
-
-- `Frequency.Weeks`, `FrequencyCount=2`: Bi-weekly paycheck (every 2 weeks)
-- `Frequency.Months`, `FrequencyCount=1`: Monthly salary
-- `Frequency.Months`, `FrequencyCount=3`: Quarterly dividend
-- `Frequency.Years`, `FrequencyCount=1`: Annual salary review or bonus
-
-### Month-End Date Behavior
-
-⚠️ **IMPORTANT:** Monthly frequencies exhibit date drift behavior due to .NET's `AddMonths` implementation.
-
-This is identical to the behavior in `ExpenseRenewalCalculator`. When income due on the **29th, 30th, or 31st** renews through a shorter month (like February), the date permanently drifts to the last valid day of that month and **never returns to the original day**.
-
-**Example: Salary paid on January 31st**
-
-1. **Jan 31** → Feb 28 (Feb only has 28 days in non-leap years)
-2. **Feb 28** → Mar 28 (AddMonths from 28th stays on 28th)
-3. **Mar 28** → Apr 28 (continues on 28th)
-4. **Forever stuck on 28th** - will never return to 31st
-
-**Tested and Documented:**
-This behavior is validated by tests:
-
-- `IncomeRenewalCalculatorFixture.Should_Handle_Month_End_Dates_Starting_Jan_31_With_Multiple_Renewals`
-- `IncomeRenewalCalculatorFixture.Should_Handle_Month_End_31st_Renewing_Twice_Through_February`
-
-See the [Month-End Date Behavior](#month-end-date-behavior) section in [ExpenseRenewalCalculator](#expenserenewalcalculator) documentation for full details.
-
-### Leap Year Date Behavior (Yearly Frequency)
-
-⚠️ **IMPORTANT:** Yearly frequencies exhibit date drift behavior when renewing from leap year dates (Feb 29).
-
-**The Problem:**
-When income due on **February 29th** (leap year) renews to a non-leap year, the date permanently drifts to February 28th and **never returns to February 29th** even in subsequent leap years.
-
-**Example: Annual bonus paid on February 29, 2024 (leap year)**
-
-1. **Feb 29, 2024** → Feb 28, 2025 (2025 is not a leap year, so Feb 29 doesn't exist)
-2. **Feb 28, 2025** → Feb 28, 2026 (AddYears from 28th stays on 28th)
-3. **Feb 28, 2026** → Feb 28, 2027 (continues on 28th)
-4. **Feb 28, 2027** → Feb 28, 2028 (2028 IS a leap year, but stays on 28th)
-5. **Forever stuck on Feb 28** - will never return to Feb 29, even in leap years
-
-**Why This Happens:**
-
-- `FrequencyExtensions.GetDaysToNext()` uses `DateOnly.AddYears(frequencyCount)`
-- When adding years to Feb 29, 2024, .NET returns Feb 28, 2025 (the last valid day in non-leap years)
-- Subsequent additions are from Feb 28, so the date stays on 28th permanently
-
-**Real-World Impact:**
-
-- Income starting on Feb 29 will be received on Feb 28 for all subsequent years (including leap years)
-
-**Tested and Documented:**
-This behavior is validated by tests:
-
-- `IncomeRenewalCalculatorFixture.Should_Handle_Leap_Year_In_Yearly_Frequency`
-
-**User Guidance:**
-Users should be aware that yearly income starting on Feb 29 will permanently shift to Feb 28 after the first renewal. The user will need to manually update the next due date when this occurs.
-
-### ⚠️ CRITICAL Timing Rule
-
-**Income is NOT renewed if `NextDue == asOfDate`**
-
-The while loop condition is: `while (nextDue <= asOfDate)`
-
-But income due EXACTLY on `asOfDate` is skipped because:
-
-- It is considered "still due" on that date
-- For projections, it needs to be received (added to Balance) on that date
-- If we advanced it before processing the receipt, the projection would be incorrect
-- It will be renewed on the NEXT day's processing
-
-**Example timeline for bi-weekly salary due Jan 17:**
-
-- Jan 16 processing: `NextDue = Jan 17` (future), no renewal
-- Jan 17 processing: `NextDue = Jan 17` (today), **SKIP renewal** (income is received on this date)
-- Jan 18 processing: `NextDue = Jan 17` (past), **NOW advance** to Jan 31 (14 days later)
-
-### End Date Handling
-
-Income can have an optional `EndDate` (e.g., contract work ending on a specific date):
-
-- Renewal stops if `NextDue` would advance beyond `EndDate`
-- Check: `if (nextDue <= endDate)` before updating `NextDue`
-- Once `NextDue >= EndDate`, the income is effectively "finished" and won't renew again
-
-**Example:** Contract work ending March 31, paid monthly on the 31st
-
-- Jan 31: received, renews to Feb 28 (within end date) - **date drifts to 28th**
-- Feb 28: received, renews to Mar 28 (within end date) - **stays on 28th**
-- Mar 28: received, would renew to Apr 28, but Apr 28 > Mar 31, so **NO renewal**
-- Income remains at `NextDue = Mar 28`, will be received but not renewed
-
-⚠️ **Note:** This example demonstrates the month-end date drift - income starting on 31st permanently shifts to 28th after February (see [Month-End Date Behavior](#month-end-date-behavior-1) above).
-
-### One-Time Income
-
-Income with `Frequency.OneTime` is explicitly skipped:
-
-```csharp
-if (income.Frequency == Frequency.OneTime) continue;
-```
-
-One-time income (e.g., bonuses, tax refunds, gifts) should not renew. After it's received on its `NextDue` date, it should be deleted from the system, or excluded from future calculations (handled by other parts of the application).
-
-### Excluded Income
-
-Income with `ExcludeFromCalcs = true` is skipped:
-
-```csharp
-if (income.ExcludeFromCalcs) continue;
-```
-
-These income sources are excluded from projections, so they don't need renewal logic.
-
-### Projection Usage
-
-During financial projections, this calculator is called for each projected day:
-
-1. Process all income due on or before current projection date
-2. Advance any that are past due to their next occurrence
-3. This simulates the passage of time day by day
-4. Each account's balance is updated as income is "received" on due dates
-
-### Loop Behavior
-
-The while loop (used in **Overdue mode only**) handles cases where multiple renewals are needed:
-
-```csharp
-while (nextDue <= asOfDate)
-```
-
-This can happen when:
-
-- The system hasn't been updated in a long time (e.g., monthly salary that's 3 months overdue)
-- Projections span long periods (e.g., projecting 365 days means monthly income renews 12 times)
-
-The loop continues until `NextDue` is in the future relative to `asOfDate`.
-
-**Note:** Future mode does NOT use a while loop - it advances exactly once.
-
-### Symmetry with Expenses
-
-This calculator mirrors the logic of `ExpenseRenewalCalculator` but for income. The key structural differences are:
-
-- No `AccrualStart` updates (income doesn't accrue)
-- Otherwise, the timing rules, frequency handling, and end date logic are identical
+Renewal writes the schedule and nothing else: `NextDue` advances, and `AccrualStart` becomes the period boundary the item has just entered, or `null` when `AccrualPolicy` is `None`. Renewal moves the cursor the accrual calculation reads, so the next read reports the new cycle from the advanced schedule.
 
 ---
 
