@@ -45,17 +45,55 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend. This
 - [Entity Framework Core](#entity-framework-core)
   - [Entity Naming Convention](#entity-naming-convention)
   - [Table Naming Convention](#table-naming-convention)
-  - [Enriched Enums](#enriched-enums)
-  - [Entity Relationships](#entity-relationships)
-  - [Indexes](#indexes)
-  - [Multi-Tenancy & Query Filters](#multi-tenancy--query-filters)
-  - [Optimistic Concurrency (ETags)](#optimistic-concurrency-etags)
+  - [Entity Conventions](#entity-conventions)
+  - [Entity Configuration](#entity-configuration)
+  - [Performance Considerations](#performance-considerations)
+  - [API Design Guidelines](#api-design-guidelines)
+- [Enriched Enums](#enriched-enums)
+  - [What Are Enriched Enums?](#what-are-enriched-enums)
+  - [Database Storage](#database-storage)
+  - [Serialization Configuration](#serialization-configuration)
+  - [Available Enriched Enums](#available-enriched-enums)
+- [Entity Relationships](#entity-relationships)
+  - [One-to-Many Relationships](#one-to-many-relationships)
+  - [Many-to-Many Relationships](#many-to-many-relationships)
+  - [Cascade Delete Behavior](#cascade-delete-behavior)
+- [Indexes](#indexes)
+  - [Index Definition](#index-definition)
+  - [Single Column Index](#single-column-index)
+  - [Composite Index](#composite-index)
+  - [Multiple Indexes](#multiple-indexes)
+  - [EntityBase Indexes](#entitybase-indexes)
+  - [Index Guidelines](#index-guidelines)
+- [Multi-Tenancy & Query Filters](#multi-tenancy--query-filters)
+  - [Site-Based Filtering](#site-based-filtering)
+  - [Bypassing Query Filters](#bypassing-query-filters)
+  - [Using Query Filters](#using-query-filters)
+- [Optimistic Concurrency (ETags)](#optimistic-concurrency-etags)
+  - [What is an ETag?](#what-is-an-etag)
+  - [How It Works](#how-it-works)
+  - [Usage Pattern](#usage-pattern)
+  - [Why Optimistic Concurrency?](#why-optimistic-concurrency)
 - [Migrations](#migrations)
+  - [EF CLI Tool Prerequisite](#ef-cli-tool-prerequisite)
+  - [Creating Migrations](#creating-migrations)
+  - [Applying Migrations](#applying-migrations)
+  - [Rollback Migrations](#rollback-migrations)
+  - [Remove Last Migration (not yet applied)](#remove-last-migration-not-yet-applied)
+  - [Migration Guidelines](#migration-guidelines)
 - [Dependency Injection](#dependency-injection)
   - [Auto-Registration Pattern](#auto-registration-pattern)
   - [Service Lifetimes](#service-lifetimes)
 - [Accrual Metrics Semantics](#accrual-metrics-semantics)
+  - [Dynamic Accrual](#dynamic-accrual-dailyexpenseaccrual)
+  - [Stable Accrual](#stable-accrual-stableexpenseaccrual)
+  - [Accrual Policy Gate](#accrual-policy-gate)
+  - [Account-Level Obligation Terms](#account-level-obligation-terms)
 - [Available Commands](#available-commands)
+  - [Development](#development)
+  - [Migrations](#migrations-1)
+  - [Testing & Quality](#testing--quality)
+- [Additional Resources](#additional-resources)
 
 ---
 
@@ -204,7 +242,7 @@ Source/Server/
 - All public APIs use `RowId` (Guid), never `Id` (int) to prevent leaking internal database identifiers
 - Endpoints return typed results: `Results<Ok<Response>, ProblemHttpResult>`
 - Include `Etag` in responses for optimistic concurrency control
-- HTTP status codes: 200 (OK), 201 (Created), 204 (No Content), 400 (Validation or a refused business rule), 401, 403,
+- HTTP status codes: 200 (OK), 201 (Created), 204 (No Content for a plain resource delete), 400 (Validation or a refused business rule), 401, 403,
   404 (Not Found), 409 (Conflict), 429 (Rate Limit), 500 (Error) - see [Problem Details](#problem-details)
 
 **Code Organization:**
@@ -1623,13 +1661,21 @@ public static Ok<Response[]> Ok(List<Output> items)
 }
 ```
 
-**4. No Content Response (200 OK no body):**
+**4. Delete Responses (204 No Content, or 200 OK with no body):**
 
-Delete handlers return the no-body result directly - there is no zero-argument `Response.Ok()` factory:
+A plain resource delete (accounts, expenses, incomes) returns `NoContent`, declared as `Results<NoContent, ProblemHttpResult>`:
+
+```csharp
+return TypedResults.NoContent();
+```
+
+Deletes that take a request body (account, site and user deletion, which confirm the password) answer `Ok` with no body, declared as `Results<Ok, ProblemHttpResult>`:
 
 ```csharp
 return TypedResults.Ok();
 ```
+
+Either way there is no zero-argument `Response.Ok()` factory.
 
 **Why ResponseBase?**
 
@@ -4387,6 +4433,7 @@ public sealed class Frequency : EnrichedEnum<Frequency>
     public static readonly Frequency Months = new(3);
     public static readonly Frequency Years = new(4);
     public static readonly Frequency OneTime = new(5);
+    public static readonly Frequency EndOfMonth = new(6);
 
     private Frequency(int value, [CallerMemberName] string? name = default)
         : base(value, name!)

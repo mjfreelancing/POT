@@ -8,15 +8,11 @@ four are done.
 
 ## W1 — Content to correct
 
-Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 and 9 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md` and client-guide passes; they are removed rather than marked done, so the numbers below start at 8 and may skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
+Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 and 9 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md` and client-guide passes; they are removed rather than marked done, so the numbers below skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
 
 **Fix when the file is reworked**
 
-8. **Server DEVELOPER:**
-   - The enriched-enum sample (4362) omits `EndOfMonth`.
-   - Line 207 lists 204, but deletes return 200.
-   - Line 1875 (`WhenNotNull` on every dependency) contradicts allsoverit-patterns:18 (DD-15).
-   - The table of contents is wrong.
+8. **Server DEVELOPER:** the `WhenNotNull()` guidance at ~1921 conflicts with `allsoverit-patterns.instructions.md:18` (DD-15). Leave it until DD-15 is decided; it matches the code today.
 9. **E2E docs:**
    - **Resolved 2026-11-04:** `e2e/README.md:10`, `e2e/AUTHORING.md:5` and the E2E ADR cited a non-existent `playwright-e2e.instructions.md`; all three now point at `e2e.instructions.md`.
    - The fixture lists in `AUTHORING.md:31` and `e2e.instructions:42` are stale: they list three fixtures, but `e2e/fixtures/auth.ts` exports four (`quickActionsTest` is missing).
