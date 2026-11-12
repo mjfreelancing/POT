@@ -5310,13 +5310,13 @@ A bill due today is the current bill: it accrues in full and is **not** counted 
 
 ### Migrations
 
-| Command                                                                                              | Description                     |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `dotnet ef migrations add <Name> --project Pot.Data --startup-project Pot.Data.Migrations`           | Create new migration            |
-| `dotnet ef database update --project Pot.Data --startup-project Pot.Data.Migrations`                 | Apply pending migrations        |
-| `dotnet ef migrations remove --project Pot.Data --startup-project Pot.Data.Migrations`               | Remove last unapplied migration |
-| `dotnet ef database update <MigrationName> --project Pot.Data --startup-project Pot.Data.Migrations` | Rollback to specific migration  |
-| `dotnet run --project Pot.Data.Migrations`                                                           | Run migrations console app      |
+| Command                                                                                              | Description                                                                        |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `dotnet ef migrations add <Name> --project Pot.Data --startup-project Pot.Data.Migrations`           | Create new migration                                                               |
+| `dotnet ef database update --project Pot.Data --startup-project Pot.Data.Migrations`                 | Apply pending migrations                                                           |
+| `dotnet ef migrations remove --project Pot.Data --startup-project Pot.Data.Migrations`               | Remove last unapplied migration                                                    |
+| `dotnet ef database update <MigrationName> --project Pot.Data --startup-project Pot.Data.Migrations` | Rollback to specific migration                                                     |
+| `dotnet run` from `Pot.Data.Migrations`                                                              | Run migrations console app; it reads `appsettings.json` from the working directory |
 
 ### Testing & Quality
 

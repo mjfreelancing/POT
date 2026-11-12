@@ -54,17 +54,14 @@ This creates a PostgreSQL container with:
 
 The migration application will connect to PostgreSQL, create the database if it doesn't exist, and apply all migrations.
 
-1. **Navigate to the migrations project:**
+1. **Run the migrations application from its own folder:**
 
    ```bash
-   cd Source/Server
+   cd Source/Server/Pot.Data.Migrations
+   dotnet run
    ```
 
-2. **Run the migrations application:**
-
-   ```bash
-   dotnet run --project Pot.Data.Migrations
-   ```
+   The folder matters: the runner reads `appsettings.json` from the working directory, so start it from `Pot.Data.Migrations`. Started from `Source/Server` it finds no settings and fails startup validation, unless the database values are supplied as `Database__*` environment variables — which is how the end-to-end harness runs it.
 
    The application will:
    - Check if PostgreSQL is available
@@ -230,8 +227,8 @@ docker logs pot-local-postgres
 ### Re-run Migrations (after pulling new code)
 
 ```bash
-cd Source/Server
-dotnet run --project Pot.Data.Migrations
+cd Source/Server/Pot.Data.Migrations
+dotnet run
 ```
 
 ---
