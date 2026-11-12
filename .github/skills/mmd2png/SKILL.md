@@ -13,4 +13,9 @@ argument-hint: "[path to .mmd file]"
    3. `mmdc -i "path/file.mmd" -o "path/file.png" -s 3`
 
    On other platforms: `npx -y @mermaid-js/mermaid-cli mmdc -i "path/file.mmd" -o "path/file.png" -s 3`.
+
+   A wide or dense diagram loses text and overlaps nodes at that size. Render it at 4K by replacing
+   `-s 3` with `-w 3840 -H 2160 -s 2`
+
 3. Report which files converted and the output paths. If `mmdc` is missing, tell the user to run `npm install -g @mermaid-js/mermaid-cli`. If a conversion fails, report the specific error for that file.
+

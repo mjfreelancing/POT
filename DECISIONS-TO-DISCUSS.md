@@ -97,7 +97,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
     The compose file's comments also name it (`docker-compose-client-server.yml:82,92`).
 
   - Playwright E2E uses `postgres:16` (`Source/Client/pot-react/playwright.globalSetup.ts:516`), so there are three versions in use.
-  - The only source for "Azure runs 17.6" is a diagram label (`Docs/Azure/POT-Azure-Diagram.mmd:18`). There is no infrastructure-as-code to confirm it.
+  - The only source for "Azure runs 17.6" is a diagram label (`Docs/reference/diagrams/pot_azure_diagram.mmd:18`). There is no infrastructure-as-code to confirm it.
   - PostgreSQL 13 reached end of life in November 2025.
 
 - **Why it matters:** The integration tests prove behaviour on 13, but production runs 17. Differences in planner behaviour, `citext`, collation and new defaults would show up in production first. The 13.6 hint is harmless against a 17 server: EF just avoids newer SQL. The real risk is the drift between test and production, and running an unsupported version locally.

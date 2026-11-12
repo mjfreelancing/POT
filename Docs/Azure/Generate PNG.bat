@@ -1,1 +1,0 @@
-mmdc -i POT-Azure-Diagram.mmd -o pot-azure-diagram.png -w 3840 -H 2160 -s 2

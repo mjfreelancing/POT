@@ -49,7 +49,7 @@ The API run outside Docker reads its local values from `appsettings.Development.
 rule ignores; no template is tracked for it.
 
 Production values come from the platform's secret store (Key Vault, read through a managed identity, in
-`Docs/Azure/POT-Azure-Diagram.mmd`) and reach the container as environment settings, so the image
+`Docs/reference/diagrams/pot_azure_diagram.mmd`) and reach the container as environment settings, so the image
 contains no credential and a rotated value does not need a rebuild. The API has no Key Vault client of its
 own; how each value is mapped is container-app configuration that the repository does not record.
 
