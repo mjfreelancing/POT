@@ -623,7 +623,21 @@ and points at the rule document for the rest. The primary-constructor disagreeme
 instruction and `.editorconfig` is settled in favour of the ban, with the base-call form as the exception
 and the key now `false`.
 
-Remaining stages: `client`, then the four test instruction files, then `docker`.
+Remaining stages: the four test instruction files, then `docker`.
+
+**Stage 3, `client` — done 2026-11-15.** The Playwright reporter rule was stated in both `client` and
+`e2e`; it now has one home in `e2e.instructions.md`, which already carried the reasoning and the symptom,
+and the client file's E2E pointer names it. The client rules cite ADR-0016 (feature organisation),
+ADR-0017 (server state and invalidation), ADR-0018 (results and the single interceptor), ADR-0039 (browser
+storage) and the existing ADR-0053. The TypeScript style rules stay in the instruction rather than moving
+to a rule document: `npm run lint` enforces the type-alias, type-import, unused-variable and import-order
+rules, and no decision sits behind the rest.
+
+**DD-13 — decided 2026-11-15, option C.** The one-way dependency rule stays exactly as written; it is the
+code that has to move. The refactor is client-only — the cross-cutting pieces into `concerns/auth` and
+`components/`, the renew helpers into `api/` or `concerns/`, the reverse imports fixed, then a lint rule
+to keep it true — and it follows the brief's route, a PRD before any code changes. The rule and the code
+therefore disagree until that PRD completes; that is recorded rather than hidden.
 
 **Checklist per instruction file:**
 

@@ -33,7 +33,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 | DD-07 | Client API types are hand-written                                                      | Med (drift)        | B: generate types from the committed contract                                                        | No                           |
 | DD-14 | No policy for API/client version skew while an old PWA shell is cached                 | Med (skew)         | A: record that no window exists, correct the guide                                                   | No                           |
 | DD-09 | Permission policies are string literals                                                | Low (fails closed) | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No                           |
-| DD-13 | Features import other features (and shared layers import features)                     | Low (structure)    | C: move auth and shared pieces into layers, enforce with lint                                        | No                           |
 | DD-16 | No server health check in the prodlike compose stack                                   | Low (local only)   | B: readiness health check, client waits for it                                                       | No                           |
 | DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path)            | Low (housekeeping) | Per item, see brief                                                                                  | No                           |
 
@@ -231,7 +230,17 @@ the scan, so no explicit registration is left without a stated reason.
 - **Recommendation:** C. The reverse imports show `auth` is already used as a layer. Moving it makes the documented rule true, and lets a lint rule keep it true.
 - **Route if changed:** raise a PRD via the prd-discovery skill (client refactor; no server, contract or migration impact).
 
-> **Your call:**
+> **Your call:** Option C. Move the cross-cutting pieces into layers, then enforce "no feature→feature" with
+> lint.
+
+**Decided 2026-11-15:** option C, so the one-way dependency rule in
+`.github/instructions/client.instructions.md` is the intended state and stays exactly as written. The work
+is a client-only refactor with no server, contract or migration impact, and it follows the brief's route:
+a PRD through the `prd-discovery` skill before any code moves. Until that PRD lands, the rule and the code
+disagree, and the exceptions listed above are what the refactor has to remove: `features/shared/sheets`
+to `components/`, the permission components and the auth and access-token contexts plus `sessionNotice`
+and `useClearSession` to `concerns/auth`, the renew helpers to `api/` or `concerns/`, and the reverse
+imports from `api/`, `components/` and `concerns/`.
 
 ---
 

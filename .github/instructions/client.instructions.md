@@ -5,25 +5,22 @@ applyTo: "Source/Client/pot-react/**"
 
 # Client (React + TypeScript)
 
-Client commands must be run from `Source/Client/pot-react`: `npm run test`, `npm run lint`, `npm run type:check`, `npm run build`; running them from the repository root does not resolve the client project. Test rules: `.github/instructions/client-tests.instructions.md`. E2E rules: `.github/instructions/e2e.instructions.md`.
-
-Playwright reporters are config-owned (`playwright.config.ts`, `playwright.prod.config.ts`). Do not add `--reporter` flags to the `e2e:*` scripts: a CLI flag replaces the config's `reporter` array outright, dropping the non-blocking HTML report.
+Client commands must be run from `Source/Client/pot-react`: `npm run test`, `npm run lint`, `npm run type:check`, `npm run build`; running them from the repository root does not resolve the client project. Test rules: `.github/instructions/client-tests.instructions.md`. E2E rules, including why the Playwright reporters are config-owned and a `--reporter` flag must never be added to an `e2e:*` script: `.github/instructions/e2e.instructions.md`.
 
 ## Architecture
 
-- Organize by feature modules (`src/features/*`), shared concerns (`src/concerns/*`) and reusable helpers (`src/lib/*`).
-- One-way dependencies: features may use shared layers; shared/cross-cutting layers must never depend on features.
+- Organize by feature modules (`src/features/*`), shared concerns (`src/concerns/*`) and reusable helpers (`src/lib/*`), with one-way dependencies: features may use shared layers, and shared or cross-cutting layers must never depend on features (ADR-0016).
 - Do not edit third-party UI primitives in `src/components/ui/*` unless explicitly requested.
 - Keep transport, feature orchestration and UI state separate. Reuse shared helpers before adding new variants.
 - Use barrel exports only when they improve discoverability and do not create cycles.
 
 ## State and data flow
 
-- Global app state: Zustand. Server state: React Query. Feature-local cross-component state: React Context. Persisted browser state: `useLocalStorage`.
-- API calls go through `src/api/hooks/useApi.ts`. Hook results are `Result<TSuccess, FailResultBase>` from `src/lib/result.ts`; branch explicitly on `result.success`.
-- Normalize API errors only in `src/api/interceptors/axiosInterceptors.ts` and typed errors in `src/api/errors/*`.
+- Global app state: Zustand. Server state: React Query, invalidated explicitly (ADR-0017). Feature-local cross-component state: React Context. Persisted browser state: `useLocalStorage`, keyed by environment and user (ADR-0039).
+- API calls go through `src/api/hooks/useApi.ts`. Hook results are `Result<TSuccess, FailResultBase>` from `src/lib/result.ts`; branch explicitly on `result.success` (ADR-0018).
+- Normalize API errors only in `src/api/interceptors/axiosInterceptors.ts` and typed errors in `src/api/errors/*`; one interceptor normalises every failure, so nothing per call (ADR-0018).
 - Never retry a `429` automatically: not in an interceptor, not through a query or mutation `retry` option or the `QueryClient` defaults, and not in a hand-written loop. It ends as a `RateLimitedError`, and the user acts again (ADR-0053).
-- Invalidate caches via `useCacheInvalidation` / `invalidateCache` in `src/concerns/cache/cacheInvalidation.ts` and existing `useApi` variants before adding new transport wrappers.
+- Invalidate caches via `useCacheInvalidation` / `invalidateCache` in `src/concerns/cache/cacheInvalidation.ts` and existing `useApi` variants before adding new transport wrappers (ADR-0017).
 - Encapsulate mutation flows in feature-level hooks that own cancellation and cache invalidation. State-changing work belongs in handlers/effects, never in render paths.
 - Logout goes through `logoutManager.logout()`; do not scatter logout side effects across contexts/components. Keep the `/logout` recovery route and authenticated catch-all behavior.
 
@@ -34,6 +31,8 @@ Playwright reporters are config-owned (`playwright.config.ts`, `playwright.prod.
 - Gate rendering and interaction with `PermissionGuard` / `WithPermission`. Prevent self-lockout (for example exclude the current user from bulk admin actions).
 
 ## TypeScript style
+
+`npm run lint` enforces the type-alias rule (`consistent-type-definitions`), type-only imports, unused variables and import order; the rest below is review.
 
 - Prefer explicit types and `type` aliases. No `any` unless unavoidable at a boundary.
 - Exported utilities are function declarations, not exported arrow functions. If an exception is required, state the reason in your response first.
