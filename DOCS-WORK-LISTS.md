@@ -633,11 +633,13 @@ storage) and the existing ADR-0053. The TypeScript style rules stay in the instr
 to a rule document: `npm run lint` enforces the type-alias, type-import, unused-variable and import-order
 rules, and no decision sits behind the rest.
 
-**DD-13 — decided 2026-11-15, option C.** The one-way dependency rule stays exactly as written; it is the
-code that has to move. The refactor is client-only — the cross-cutting pieces into `concerns/auth` and
-`components/`, the renew helpers into `api/` or `concerns/`, the reverse imports fixed, then a lint rule
-to keep it true — and it follows the brief's route, a PRD before any code changes. The rule and the code
-therefore disagree until that PRD completes; that is recorded rather than hidden.
+**DD-13 — decided 2026-11-15, option C, raised as
+[PRD-0036](Docs/prd/PRD-0036-client-feature-import-boundaries-discovery.md).** The one-way dependency rule
+stays exactly as written; it is the code that has to move. The refactor is client-only — the cross-cutting
+pieces into `concerns/auth` and `components/`, the renew helpers into `api/` or `concerns/`, the reverse
+imports fixed, then a lint rule to keep it true — and it follows the brief's route, a PRD before any code
+changes. The rule and the code therefore disagree until that PRD completes; that is recorded rather than
+hidden.
 
 **Checklist per instruction file:**
 

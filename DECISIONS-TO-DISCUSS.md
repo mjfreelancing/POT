@@ -236,11 +236,14 @@ the scan, so no explicit registration is left without a stated reason.
 **Decided 2026-11-15:** option C, so the one-way dependency rule in
 `.github/instructions/client.instructions.md` is the intended state and stays exactly as written. The work
 is a client-only refactor with no server, contract or migration impact, and it follows the brief's route:
-a PRD through the `prd-discovery` skill before any code moves. Until that PRD lands, the rule and the code
-disagree, and the exceptions listed above are what the refactor has to remove: `features/shared/sheets`
-to `components/`, the permission components and the auth and access-token contexts plus `sessionNotice`
-and `useClearSession` to `concerns/auth`, the renew helpers to `api/` or `concerns/`, and the reverse
-imports from `api/`, `components/` and `concerns/`.
+a PRD through the `prd-discovery` skill before any code moves. **Raised as
+[PRD-0036](Docs/prd/PRD-0036-client-feature-import-boundaries-discovery.md)**, whose discovery document
+holds the decision, the two alternatives that were dropped and the open questions, so nothing in this file
+needs to survive for the work to stay understood. Until that PRD lands, the rule and the code disagree,
+and the exceptions listed above are what the refactor has to remove: `features/shared/sheets` to
+`components/`, the permission components and the auth and access-token contexts plus `sessionNotice` and
+`useClearSession` to `concerns/auth`, the renew helpers to `api/` or `concerns/`, and the reverse imports
+from `api/`, `components/` and `concerns/`.
 
 ---
 
