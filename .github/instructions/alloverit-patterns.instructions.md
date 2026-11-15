@@ -3,12 +3,14 @@ description: "AllOverIt helper, validator and exception logging patterns"
 applyTo: "Source/Server/**/*.cs"
 ---
 
-
 # AllOverIt and logging patterns
 
 Living document: add new patterns or corrections here. When it grows, split it into focused rule files.
 
-These apply when `AllOverIt.Extensions` is available (via the `AllOverIt` NuGet package).
+These apply when `AllOverIt.Extensions` is available (via the `AllOverIt` NuGet package). The server uses
+the library rather than the framework's own primitives so that one idiom covers every layer — the reason
+and its trade-offs are in
+[ADR-0056](../../Docs/adr/ADR-0056-the-server-builds-on-the-alloverit-library-family.md).
 
 ## Strings and null guards
 
@@ -42,13 +44,13 @@ internal sealed class MyValidator : ValidatorBase<MyModel>
 
 Use `Throw<TException>` to validate state that should have been established before a method runs (for example properties set by DI or code-behind wiring). It is not for constructor parameters.
 
-| Method | Throws when |
-| --- | --- |
-| `When(condition)` | condition is `true` |
-| `WhenNot(condition)` | condition is `false` |
-| `WhenNull(object)` | object is `null` |
-| `WhenNotNull(object)` | object is not `null` |
-| `WhenNullOrEmpty(string)` | string is `null` or empty |
+| Method                       | Throws when                   |
+| ---------------------------- | ----------------------------- |
+| `When(condition)`            | condition is `true`           |
+| `WhenNot(condition)`         | condition is `false`          |
+| `WhenNull(object)`           | object is `null`              |
+| `WhenNotNull(object)`        | object is not `null`          |
+| `WhenNullOrEmpty(string)`    | string is `null` or empty     |
 | `WhenNotNullOrEmpty(string)` | string is not `null` or empty |
 
 Each has overloads taking up to 4 exception constructor arguments, as values or as `Func<>` for deferred evaluation.
@@ -66,3 +68,4 @@ Throw<InvalidOperationException>.WhenNull(someObject, () => $"Unexpected null fo
 - Prefer `logger.LogError(exception, "Failed to process the request.");` so the logging configuration decides how much detail to render.
 - Avoid `exception.ToString()` in general or production code: it forces the full stack trace into the message and can leak file paths, type names and call chains. Reserve it for internal tools or fatal startup failures.
 - `logger.LogError("{ErrorMessage}", exception.Message)` is acceptable only for well-known, shallow exceptions (validation errors, configuration binding failures).
+

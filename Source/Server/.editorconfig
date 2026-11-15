@@ -132,7 +132,8 @@ csharp_prefer_simple_using_statement = true
 csharp_prefer_system_threading_lock = true
 csharp_style_namespace_declarations = file_scoped
 csharp_style_prefer_method_group_conversion = true
-csharp_style_prefer_primary_constructors = true
+# Explicit constructors: the signature is the injection surface. The base-call form is the only exception.
+csharp_style_prefer_primary_constructors = false
 csharp_style_prefer_top_level_statements = true
 
 # Expression-level preferences

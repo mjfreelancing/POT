@@ -424,7 +424,7 @@ are consequential and evidenced. Do not invent missing history.
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
 | 0037 | Layered server (API → App → Data, plus Shared) with feature slices mirrored across layers; auth lives in the host                          | Acc                                     | ARCHITECTURE:95–118; server.instructions:10–15                                                                                                                | 1    |
 | 0038 | Endpoints are Minimal API slices: static handler, typed results, separate request/response models, hand-written mapping (no AutoMapper)    | Acc                                     | server DEVELOPER:440–489, 2920–3086                                                                                                                           | 1    |
-| 0039 | Build on the AllOverIt library family                                                                                                      | Acc                                     | Directory.Packages.props; alloverit-patterns.instructions                                                                                                     | 1    |
+| 0039 | Build on the AllOverIt library family                                                                                                      | Acc (ADR-0056)                          | ADR-0056; Directory.Packages.props; alloverit-patterns.instructions                                                                                           | 1    |
 | 0040 | Services are registered by marker-interface scanning                                                                                       | Acc (ADR-0055)                          | ADR-0055; Pot.App/Extensions/ServiceCollectionExtensions.cs:14,31; Pot.Shared/DependencyInjection                                                             | 2    |
 | 0041 | Business failures are `EnrichedResult` values, not exceptions                                                                              | Acc                                     | server DEVELOPER:2228–2305; PRD-0030:138                                                                                                                      | 1    |
 | 0042 | Request shape is validated in the handler; data-dependent rules are entity-check chains                                                    | Acc                                     | server DEVELOPER:340–368, 2041–2226, 3268–3412                                                                                                                | 1    |
@@ -613,7 +613,17 @@ the two drifting apart.
 [ADR-0055](Docs/adr/ADR-0055-services-are-registered-by-scanning-each-layer-for-its-marker-interface.md)
 records marker-interface scanning, and the DI section of `server.instructions.md` now states the marker
 rules and the three cases where an explicit registration is right, so it matches the code (DD-10 closed).
-Remaining stages: the rest of `server`, then `client`, then the four test instruction files, then `docker`.
+
+**Stage 2, the rest of `server` and `alloverit-patterns` — done 2026-11-12.**
+[ADR-0056](Docs/adr/ADR-0056-the-server-builds-on-the-alloverit-library-family.md) records the library
+choice, and `Docs/standards/server-code.md` now states every C# and XML-documentation convention with its
+enforcement and provenance — the first rule document the folder has held. `server.instructions.md` cites
+the ADRs for the architecture, OpenAPI and persistence rules, no longer restates the OpenAPI rationale,
+and points at the rule document for the rest. The primary-constructor disagreement between the
+instruction and `.editorconfig` is settled in favour of the ban, with the base-call form as the exception
+and the key now `false`.
+
+Remaining stages: `client`, then the four test instruction files, then `docker`.
 
 **Checklist per instruction file:**
 

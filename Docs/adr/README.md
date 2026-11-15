@@ -169,6 +169,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0052](ADR-0052-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md) | The API trusts the caller address and scheme from the ingress | accepted |
 | [ADR-0054](ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) | Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry | proposed |
 | [ADR-0055](ADR-0055-services-are-registered-by-scanning-each-layer-for-its-marker-interface.md) | Services are registered by scanning each layer for its marker interface | accepted |
+| [ADR-0056](ADR-0056-the-server-builds-on-the-alloverit-library-family.md) | The server builds on the AllOverIt library family, not the framework's primitives | accepted |
 
 ### Frontend
 
@@ -197,7 +198,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0054](ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) — Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry
 
-### Accepted (52)
+### Accepted (53)
 
 - [ADR-0001](ADR-0001-optimistic-concurrency-is-checked-in-the-application.md) — Optimistic concurrency is checked in the application, not by the database
 - [ADR-0002](ADR-0002-endpoints-are-minimal-api-slices-with-their-own-models.md) — Endpoints are minimal API slices with their own request and response models
@@ -251,6 +252,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0052](ADR-0052-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md) — The API trusts the caller address and scheme from the ingress
 - [ADR-0053](ADR-0053-the-client-never-retries-a-rate-limited-request.md) — The client never retries a rate-limited request
 - [ADR-0055](ADR-0055-services-are-registered-by-scanning-each-layer-for-its-marker-interface.md) — Services are registered by scanning each layer for its marker interface
+- [ADR-0056](ADR-0056-the-server-builds-on-the-alloverit-library-family.md) — The server builds on the AllOverIt library family, not the framework's primitives
 
 ### Superseded (2)
 
