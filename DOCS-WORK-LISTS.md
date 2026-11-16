@@ -669,20 +669,33 @@ run-command lists, which duplicated the README; the four traps only it carried (
 match, the shared table-description text, the Radix pointerup mechanism, the desktop-only skip) moved
 into the README's list before the section was replaced by a link.
 
+**Stage 5, `docker` — done 2026-11-16.** This file needed no restructuring: every line is already a rule and
+it states no reasoning. The container names, ports and health URLs it repeats are a deliberate exception —
+`Docs/reference/ports-and-environments.md` names this file as one of three intended agent-facing copies,
+because an agent should not have to open a second document to act on a rule — so the values stayed. The
+file now says why they are there, points at the reference page as the owner of the full set and of the
+places that must agree when a port changes, and cites ADR-0025 for why the compose commands load the two
+env files.
+
+**W5 complete 2026-11-16**, apart from the `ARCHITECTURE.md` slimming the plan ties to W4. Every
+instruction now either cites the ADR or rule document behind its rules, or is recorded here as a convention
+with no decision behind it. ADR-0055 to ADR-0058 were written during the review, and
+`Docs/standards/server-code.md` is the first rule document the folder has held.
+
 **Checklist per instruction file:**
 
-- [ ] For each rule, name the decision it enforces. If a consequential decision has no ADR, raise one
+- [x] For each rule, name the decision it enforces. If a consequential decision has no ADR, raise one
       (W4's evidence rules apply; do not invent rationale).
-- [ ] Prefer grouping related coding conventions into one ADR over one ADR per small rule. A single-line
+- [x] Prefer grouping related coding conventions into one ADR over one ADR per small rule. A single-line
       rule rarely justifies its own ADR, and a collection of convention ADRs reads better than many
       thin ones (owner preference, 2026-11-12).
-- [ ] If the instruction states rationale, an example or the alternatives, replace it with a citation of
+- [x] If the instruction states rationale, an example or the alternatives, replace it with a citation of
       the ADR and leave only the rule.
-- [ ] If a rule is a pure coding convention with no decision behind it, confirm it belongs in an
+- [x] If a rule is a pure coding convention with no decision behind it, confirm it belongs in an
       instruction (agent-facing) or a `Docs/standards/` rule document, and note which.
-- [ ] Where two instruction files disagree, or an instruction contradicts the code, decide which is
+- [x] Where two instruction files disagree, or an instruction contradicts the code, decide which is
       right — DD-10 in `DECISIONS-TO-DISCUSS.md` is the known case.
-- [ ] Confirm `docs-check` still passes (every `ADR-NNNN` an instruction cites exists and is accepted).
+- [x] Confirm `docs-check` still passes (every `ADR-NNNN` an instruction cites exists and is accepted).
 
 **Files in scope:** `alloverit-patterns`, `aspnetcore-integration-tests`, `client-tests`, `client`,
 `docker`, `dotnet-tests`, `e2e`, `server` (all under `.github/instructions/`).
