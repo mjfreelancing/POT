@@ -82,3 +82,46 @@ than a side effect of viewing a chart.
 - The accrual arithmetic: `Pot.App/Calculators`.
 - The renewal rules: [Renewal Calculators](../../Source/Server/IMPLEMENTATION.md#renewal-calculators).
 - The projection walk: `Pot.App/Features/Projections`.
+
+## One engine, one as-of date
+
+No accrual value is persisted. `Accrued` is computed on read from the persisted schedule — `NextDue`,
+`AccrualStart`, `Frequency`, `FrequencyCount`, `EndDate` and `Amount` — and every accrual-bearing read
+(`/api/accounts`, `/api/accounts/{id}`, `/api/expenses`, `/api/projections`) takes its values from that one
+engine for the same as-of date. That is why two screens cannot disagree about the same day, and why
+changing a schedule changes every figure at once rather than leaving a stored copy behind.
+
+## The policy the model serves
+
+POT is obligation-first: it prioritises upcoming required payments and derives daily guidance from them.
+
+**Foundational approach**
+
+1. Cash-basis forecasting is the primary decision lens.
+2. Income and expenses are modelled as dated obligations.
+3. The running balance projection is the primary source of truth.
+4. Mandatory obligations are protected before discretionary spending.
+5. A stable daily funding target serves planning; the dynamic operational accrual serves simulation.
+
+**Outputs the model must support**
+
+1. A stable daily funding requirement.
+2. An available (safe-to-spend) balance.
+3. Upcoming risk dates, taken from projected balance dips.
+4. Forecast runway under the current assumptions.
+
+**Guardrails**
+
+1. Planned obligations and already-paid obligations never share one state model.
+2. Mandatory and optional spending stay separate concerns.
+3. Daily metrics are derived on every read from the current balance, amount, due date, schedule and
+   policy — a computed accrual is never persisted.
+4. Forecasts run over rolling windows, not static month snapshots.
+5. Calculation assumptions are stated in the user and developer documentation.
+
+**Sinking fund semantics**
+
+1. Each obligation accrues toward a due-date target over an accrual cycle.
+2. Reserved and committed amounts restrict spendable funds; they are not double-counting.
+3. A payment reduces both the ledger balance and the obligation reserve, then starts the next cycle where
+   the schedule has one.

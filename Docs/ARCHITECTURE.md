@@ -2,44 +2,23 @@
 
 This document provides a high-level overview of POT's technical architecture.
 
-## Technology Stack
+## Technology stack
 
-### Frontend
+These are the families in use. The versions live in `Source/Client/pot-react/package.json` and
+`Source/Server/Directory.Packages.props`, which are the only places they are stated.
 
-- **React 19** - Modern UI library with latest features
-- **TypeScript 6** - Type-safe development
-- **Vite 8** - Fast build tool and dev server
-- **Tailwind CSS v4** - Utility-first CSS framework
-- **shadcn/ui** - High-quality, customizable UI components
-- **React Router v8** - Client-side routing
-- **TanStack Query** - Server state management and caching
-- **TanStack Table** - Headless table and data-grid primitives
-- **Zustand** - Small global client state (user session details, UI preferences)
-- **React Hook Form** - Form handling
-- **Zod** - Schema validation
-- **Recharts** - Data visualization
-- **vite-plugin-pwa** - Installable app shell with offline precache
+**Frontend** — React and TypeScript, built with Vite, styled with Tailwind CSS and shadcn/ui, routed with
+React Router, with TanStack Query for server state, TanStack Table for data grids, Zustand for small global
+state, React Hook Form and Zod for forms and schemas, Recharts for charts, and `vite-plugin-pwa` for the
+installable shell.
 
-### Backend
+**Backend** — ASP.NET Core, Minimal APIs, Entity Framework Core over PostgreSQL, FluentValidation, the
+AllOverIt library family (ADR-0056), Scalar for the OpenAPI reference UI in Development only, MailKit for
+email, and JWT for tokens.
 
-- **ASP.NET Core** - High-performance web framework
-- **.NET 10** - .NET runtime
-- **Minimal APIs** - Lightweight API endpoints
-- **Entity Framework Core** - Object-relational mapping
-- **PostgreSQL** - Relational database
-- **FluentValidation** - Input and business validation
-- **AllOverIt** - Helper, validation, result and dependency-injection library family
-- **Scalar** - OpenAPI reference UI, enabled in Development only
-- **MailKit** - Email sending
-- **JWT** - Token-based authentication
+**DevOps** — Docker and Docker Compose locally, nginx serving the built client, and Git.
 
-### DevOps
-
-- **Docker & Docker Compose** - Containerization
-- **nginx** - Web server for production frontend
-- **Git** - Version control
-
-## Project Structure
+## Project structure
 
 ```
 POT/
@@ -86,217 +65,105 @@ POT/
 └── README.md                                 # Project overview
 ```
 
-## Frontend Architecture
+## Frontend architecture
 
-The frontend follows a **feature-based architecture** where related code is grouped by feature rather than by technical type.
+The frontend is organised by feature over shared layers: features may use the shared `api/`, `concerns/`,
+`components/` and `lib/` layers, and those layers never depend on a feature (ADR-0016). Related code sits
+beside the feature it serves rather than in a technical folder, transport is centralised in one API layer,
+and server state is cached rather than copied into component state (ADR-0017).
 
-**Key Patterns:**
+The rules an edit must follow are in
+[`.github/instructions/client.instructions.md`](../.github/instructions/client.instructions.md); the worked
+examples are in `Source/Client/pot-react/DEVELOPER.md`.
 
-- Feature modules in `src/features/` (auth, accounts, expenses, income, etc.)
-- Centralized API layer with TanStack Query
-- Type-safe API communication with custom Result pattern
-- Global client state with Zustand, server state with TanStack Query
-- Component composition with shadcn/ui primitives
+## Backend architecture
 
-**For detailed frontend patterns:** See `Source/Client/pot-react/DEVELOPER.md`
+The backend is layered by responsibility — `Pot.AspNetCore` → `Pot.App` → `Pot.Data`, with `Pot.Shared`
+cross-cutting — and each layer mirrors the same feature slices, so a feature is read vertically inside a
+layer rather than scattered across it (ADR-0003). An endpoint is a minimal API slice with its own request
+and response models (ADR-0002), business logic sits in services behind repositories (ADR-0011), and
+expected failures are returned as results rather than thrown (ADR-0015).
 
-## Backend Architecture
+The rules an edit must follow are in
+[`.github/instructions/server.instructions.md`](../.github/instructions/server.instructions.md); the worked
+examples are in `Source/Server/DEVELOPER.md`.
 
-The backend uses a **hybrid architecture** combining layered and feature-based approaches:
+## Cashflow model
 
-**Layered structure:**
+POT is obligation-first: income and expenses are dated obligations, and daily guidance is derived from
+them. Two accrual figures are computed on the server — a dynamic one for operational simulation and a stable
+one for planning — and no accrual value is ever stored; every accrual-bearing read computes from one engine
+for the same as-of date, so two screens cannot disagree about the same day.
 
-- **Pot.AspNetCore** - API endpoints, middleware, configuration
-- **Pot.App** - Business logic, services, features
-- **Pot.Data** - Entity Framework Core, data access
-- **Pot.Shared** - DTOs, contracts shared between layers
+How the metrics, arrears, availability, guardrails and the day-by-day projection fit together is
+[the cashflow model](explanation/cashflow-model.md). The individual terms are in the
+[glossary](reference/glossary.md).
 
-**Feature-based organization within each layer:**
+## Testing
 
-- Each layer organizes code by business feature (Auth, Expenses, Income, etc.)
-- Features span multiple layers but maintain clear separation of concerns
-
-**Key Patterns:**
-
-- Minimal APIs for endpoint definition
-- FluentValidation for input validation
-- EF Core for database operations
-- JWT-based authentication and authorization
-
-**For detailed backend patterns:** See `Source/Server/DEVELOPER.md`
-
-## Cashflow Metrics Model
-
-POT uses a dual-metric model for expense accrual behavior:
-
-- Dynamic accrual (`DailyExpenseAccrual`) for operational projection simulation.
-- Stable accrual (`StableExpenseAccrual`) for long-run daily funding guidance.
-
-Both metrics are computed server-side by accrual calculators to keep behavior deterministic across API and UI.
-
-Accrual policy is explicit per expense:
-
-- `Automatic` enables accrual contribution.
-- `None` disables accrual contribution while retaining due-date scheduling and balance debits.
-
-How the metrics combine into availability, arrears and a projection: [Cashflow model](explanation/cashflow-model.md).
-Terms: [Glossary](reference/glossary.md).
-
-### Accrual is derived, not stored
-
-No accrual value is persisted. `Accrued` is computed on read from the persisted schedule — `NextDue`, `AccrualStart`, `Frequency`, `FrequencyCount`, `EndDate` and `Amount` — and every accrual-bearing read (`/api/accounts`, `/api/accounts/{id}`, `/api/expenses`, `/api/projections`) obtains its values from that one engine for the same as-of date, so the values read are always the current ones.
-
-Three account-level amounts are kept distinct:
-
-- `TotalExpenseAccrued` — the accrual of each cycle currently in progress, bounded by that cycle's `Amount`.
-- `TotalArrears` — one `Amount` per occurrence whose due date has passed un-settled. Arrears follows the schedule rather than the accrual policy, so an expense that does not accrue still carries it.
-- `TotalCommitted` — `TotalExpenseAccrued + TotalArrears`, the headline obligation, rendered as the accounts table's `Committed` column. The accounts read derives `Available = Balance − Reserved − TotalCommitted` from it.
-
-A bill due today is the current bill: it accrues in full and is **not** arrears.
-
-## Cashflow Policy Foundations
-
-POT uses an obligation-first cashflow model.
-
-### Core Objective
-
-Prioritize upcoming required payments and derive daily guidance from those obligations.
-
-### Foundational Approach
-
-1. Use cash-basis forecasting as the primary decision lens.
-2. Model income and expenses as dated obligations.
-3. Use running balance projection as the primary truth source.
-4. Protect mandatory obligations before discretionary spending.
-5. Present a stable daily funding target for user planning and a dynamic operational accrual metric for simulation behavior.
-
-### Decision-Ready Outputs
-
-At product level, the model is expected to support these outputs:
-
-1. Stable daily funding requirement.
-2. Available (safe-to-spend) balance.
-3. Upcoming risk dates from projected balance dips.
-4. Forecast runway under current assumptions.
-
-### Why This Model
-
-1. Handles mixed frequencies, including one-time obligations.
-2. Prioritizes due-date reliability over category-only budgeting.
-3. Produces actionable daily guidance while preserving operational simulation detail.
-
-### Core Guardrails
-
-1. Do not mix planned obligations with already-paid obligations in the same state model.
-2. Keep mandatory and optional spending concerns separate.
-3. Derive daily metrics from the current balance, amount, due date, schedule and policy on every read; never persist a computed accrual.
-4. Use rolling forecast windows instead of static month snapshots.
-5. Make calculation assumptions explicit in user and developer documentation.
-
-### Sinking Fund Semantics (High Level)
-
-1. Each obligation accrues toward a due-date target over an accrual cycle.
-2. Reserved and committed amounts restrict spendable funds; they are not double-counting.
-3. Payment events reduce both ledger balance and obligation reserve, then start the next cycle when applicable.
-
-## Testing Architecture
-
-Server tests are split by intent to keep boundaries clear and test execution predictable.
-
-### Unit Test Projects
-
-- `Pot.App.Tests` - business logic and app-layer behavior in isolation
-- `Pot.Data.Tests` - data-layer behavior/specifications in isolation
-- `Pot.AspNetCore.Tests` - API-layer units (services/components) without booting the full HTTP pipeline
-
-### Integration Test Project
-
-- `Pot.AspNetCore.Integration.Tests` - hosted API tests using `WebApplicationFactory<Program>` + real `HttpClient`, including endpoint handler behavior
-- Focus areas include middleware, CORS, rate limiting, security headers, endpoint method contracts (`405`), and ProblemDetails contracts
-
-### Unit vs Integration Decision Rule
-
-- **Unit test:** execute class/method directly with in-process test doubles; no hosted API required
-- **Integration test:** boot `Program` and verify behavior through HTTP boundary (status, headers, response body contract)
-
-Shared test helpers live in `Pot.TestUtils` and are referenced by test projects.
+A unit project per layer, plus one hosted integration project that boots the application and drives it over
+HTTP (ADR-0037). Which kind a test is decides which project owns it — the definition is in
+[`aspnetcore-integration-tests.instructions.md`](../.github/instructions/aspnetcore-integration-tests.instructions.md)
+(Unit or integration?) — and the conventions for both are in
+[`dotnet-tests.instructions.md`](../.github/instructions/dotnet-tests.instructions.md). Shared helpers live
+in `Pot.TestUtils`.
 
 ## Database
 
-**PostgreSQL** is used for data persistence with Entity Framework Core managing:
+PostgreSQL through Entity Framework Core, with enum values stored by name, uniqueness enforced by the
+database and cascades restricted to an explicit ordered sweep (ADR-0004, ADR-0005, ADR-0006, ADR-0007,
+ADR-0008). Migrations live in `Pot.Data/Migrations` and are applied by a separate runner before the API
+starts (ADR-0009), in additive steps where a change would otherwise be destructive (ADR-0010).
 
-- Schema migrations
-- Entity relationships
-- Query generation
-- Transaction management
+## Authentication and authorization
 
-Database migrations are managed in the `Pot.Data.Migrations` project.
+Short-lived JWT access tokens backed by a server-side session, permissions resolved from the database on
+every request and checked as `resource:action`, each tenant confined to its site (ADR-0021, ADR-0022,
+ADR-0030). Sign-up requires email verification and platform-admin approval, and the verification codes are
+single-use and expiring (ADR-0024).
 
-## Authentication & Authorization
+The flows are in [authentication](explanation/authentication.md); the token, cookie, claim and session
+details are in [auth and sessions](reference/auth-and-sessions.md).
 
-- **JWT tokens** with refresh token support
-- **Email verification** via OTP (One-Time Password)
-- **Platform admin approval** for new user accounts
-- **Role-based permissions** using `resource:action` format
-- **Site-based isolation** for multi-tenant support
+## Docker
 
-## Docker Setup
+The full stack — PostgreSQL, the API, and nginx serving the client — is started by the
+`docker-start-client-server` task. [Run the Docker stack](how-to/run-the-docker-stack.md) covers using it;
+[ports and environments](reference/ports-and-environments.md) owns every port and lists what must change
+with one.
 
-POT runs in Docker containers for consistent development. The local stack is:
+## Development workflow
 
-- **PostgreSQL container** - Database
-- **ASP.NET Core container** - Backend API
-- **nginx + React container** - Frontend
+Setup is a tutorial rather than an architecture topic. [Getting started](tutorials/getting-started.md) takes
+a newcomer from a clone to a running stack, [first-time setup](tutorials/first-time-setup.md) covers the
+initial account and platform administrator, and the values the stack reads are described in
+[configuration](reference/configuration.md).
 
-**For Docker details:** See `Source/Docker/DEVELOPER.md`
+## API communication
 
-## Development Workflow
+REST over `/api`, JSON, JWT bearer tokens. Every failure is an RFC 9457 Problem Details document: a `400`
+carries the validation problem's `errors` map and every other failure carries `detail`, and every body
+carries `correlationId`, `traceId` and `instance` (ADR-0012, ADR-0048). The base URL per environment is in
+[ports and environments](reference/ports-and-environments.md).
 
-1. **Clone the repository**
-2. **Configure environment** - Copy `Source/Docker/.env.development.template` to `Source/Docker/.env.development` and set the values it marks; see [Configuration](reference/configuration.md)
-3. **Create required directory** - `Source/Docker/postgres-data/`
-4. **Start services** - Docker containers (recommended) or run manually
-5. **Access application** - Navigate to http://localhost:5175
-6. **First-time setup** - Create user account and configure platform admin
+## Client state
 
-**For complete setup:** See [Getting Started](tutorials/getting-started.md)
+Server state is a TanStack Query cache with explicit invalidation; small global state is Zustand; the
+short-lived access token is held in React context rather than in a store; forms are React Hook Form over Zod
+schemas (ADR-0016, ADR-0017). The rules that follow from this are in
+[`client.instructions.md`](../.github/instructions/client.instructions.md).
 
-## API Communication
+## Build and deployment
 
-The frontend communicates with the backend via RESTful APIs:
+**Development** — the Vite dev server with hot module replacement, the API run locally or in a container,
+and a PostgreSQL container or a local installation.
 
-- Base URL: `/api` (proxied to backend in development)
-  - Docker: `http://localhost:5241` (via docker-compose)
-  - Local: `http://localhost:5242` (via Visual Studio/dotnet run)
-  - Every port and environment: [Ports and environments](reference/ports-and-environments.md)
-- Authentication: JWT Bearer tokens
-- Content-Type: `application/json`
-- Error handling: RFC 9457 Problem Details - every failure carries `detail` except a `400`, which carries the validation
-  problem's `errors` map instead, and every body carries `correlationId`, `traceId` and `instance`
-
-## State Management Strategy
-
-- **Server state** - TanStack Query (API data, caching, synchronization)
-- **Global client state** - Zustand (user session details, UI preferences); the short-lived access token is held in React context, not in a store
-- **Local state** - React Context (feature-specific state)
-- **Form state** - React Hook Form (form inputs, validation)
-
-## Build & Deployment
-
-**Development:**
-
-- Frontend: Vite dev server with hot module replacement (HMR)
-- Backend: Docker container with ASP.NET Core runtime OR `dotnet run` locally
-- Database: Docker PostgreSQL container OR local PostgreSQL installation
-
-**Production:**
-
-- Frontend: Vite production build served by nginx in a container, on its own hostname and certificate
-- Backend: container running the migration runner and then ASP.NET Core, on its own hostname and certificate
-- Database: a managed PostgreSQL server (SSL required), separate from the container apps
-- Orchestration: Azure Container Apps, two container apps in one environment (no Docker Compose in production)
-
-> **Note:** Development supports both Docker (recommended) and manual setup. Production runs in Azure Container Apps — nginx serving the built client and the API on its own hostname — against a managed PostgreSQL server. The exact server version is not recorded in the repository; confirm it in the Azure portal. See [ADR-0032](adr/ADR-0032-production-runs-two-container-apps.md) and [ADR-0005](adr/ADR-0005-postgresql-is-the-relational-datastore.md).
+**Production** — two Azure Container Apps in one environment: nginx serving the built client, and a
+container that runs the migration runner and then the API, each on its own hostname behind a managed
+certificate, against a managed PostgreSQL server that requires SSL. There is no Docker Compose in
+production, and TLS terminates at the ingress (ADR-0032, ADR-0033). Builds, tests and deployments are run by
+hand — there is no continuous integration (ADR-0031) — and the deployed server version is not recorded in the
+repository, so it has to be confirmed in the portal (ADR-0005).
 
 ---
 
