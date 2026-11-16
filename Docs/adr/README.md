@@ -128,6 +128,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0044](ADR-0044-retry-after-client-cooldown-handling.md) | Retry-After client cooldown handling | superseded |
 | [ADR-0045](ADR-0045-no-end-to-end-test-shares-authentication-state-with-another.md) | No end-to-end test shares authentication state with another | accepted |
 | [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) | Tenants are provisioned and destroyed by the product's own routes in tests | accepted |
+| [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md) | The client and server deploy separately, and API version skew is accepted for minutes | accepted |
 
 ### Backend
 
@@ -185,6 +186,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0039](ADR-0039-browser-storage-is-keyed-by-environment-and-user.md) | Browser storage is keyed by environment and user | accepted |
 | [ADR-0046](ADR-0046-a-new-client-build-is-applied-by-enforced-update.md) | A new client build is applied by enforced update | accepted |
 | [ADR-0053](ADR-0053-the-client-never-retries-a-rate-limited-request.md) | The client never retries a rate-limited request | accepted |
+| [ADR-0059](ADR-0059-the-client-api-types-are-hand-written-and-the-committed-contract-is-a-reference.md) | The client's API types are hand-written, and the committed contract is a reference | accepted |
 
 ### Infrastructure
 
@@ -200,7 +202,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0054](ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) — Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry
 
-### Accepted (55)
+### Accepted (57)
 
 - [ADR-0001](ADR-0001-optimistic-concurrency-is-checked-in-the-application.md) — Optimistic concurrency is checked in the application, not by the database
 - [ADR-0002](ADR-0002-endpoints-are-minimal-api-slices-with-their-own-models.md) — Endpoints are minimal API slices with their own request and response models
@@ -257,6 +259,8 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0056](ADR-0056-the-server-builds-on-the-alloverit-library-family.md) — The server builds on the AllOverIt library family, not the framework's primitives
 - [ADR-0057](ADR-0057-server-tests-run-on-xunit-v3-with-the-microsoft-testing-platform-turned-off.md) — Server tests run on xUnit v3 with the Microsoft Testing Platform turned off
 - [ADR-0058](ADR-0058-hosted-integration-tests-derive-their-cases-and-isolation-checks-from-the-contract-and-the-model.md) — Hosted integration tests derive their cases and isolation checks from the contract and the model
+- [ADR-0059](ADR-0059-the-client-api-types-are-hand-written-and-the-committed-contract-is-a-reference.md) — The client's API types are hand-written, and the committed contract is a reference
+- [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md) — The client and server deploy separately, and API version skew is accepted for minutes
 
 ### Superseded (2)
 

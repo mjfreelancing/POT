@@ -3115,7 +3115,7 @@ Expected detection timing:
 - If a user refocuses the app tab after deployment, detection should occur quickly via focus/visibility checks
 - If a user keeps the tab open and idle, detection occurs within the configured periodic check window (currently 30 minutes)
 - The deployed-build check retries independently of the service worker path: on focus/visibility, immediately at startup, and every 5 minutes while visible. That covers a service worker check that missed or failed, for example while the client container is being recreated
-- Detection does not use a client/server version handshake, so a breaking API change still relies on the backward-compatibility policy. The deployed-build check only reports that a newer _client_ build exists
+- Detection does not use a client/server version handshake, and no backward-compatibility policy exists: a breaking API change ships with no compatibility window, and the skew is accepted until the enforced update applies — a matter of minutes (ADR-0060). The deployed-build check only reports that a newer _client_ build exists
 
 ---
 
