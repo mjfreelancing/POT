@@ -94,33 +94,14 @@ timeout: 60_000 })` + `GET /api/<list>` with the accessToken, then assert the UI
   on headers), THEN assert the UI signal (toast/dialog) with documented headroom
   `{ timeout: 30_000 }` (see `quickActions.test.ts`).
 
-## Common traps (condensed)
+## Common traps
 
-- `locator.filter({ hasText })` is a **substring** match — anchor with `^...$` when the text
-  could be a prefix/substring of siblings (calendar day "1" also matches 10-19/21).
-- Create/edit form "Description" collides with the page "Search … by description" — use
-  `getByRole('textbox', { name: 'Description', exact: true })`.
-- Radix `Select`: use `selectRadixOption` (`e2e/helpers/radix.ts`) — click the `combobox`
-  trigger, then the keyboard/AT path (`data-highlighted` gate + focus + Enter + `toBeHidden`).
-  Never `.click()` or `evaluate()` dispatch an option.
-- MODAL dialogs close on Escape/backdrop; always-open create sheets do NOT (form Cancel /
-  back-nav only). `DialogContent` has no X by default (`showCloseButton=false`).
-- A table description cell often shares text with badges/popovers — use substring
-  `getByText`, not `{ exact: true }`.
-- Desktop-only flows: `test.skip(isMobileProject(testInfo), '...')` (mobile uses the card
-  grid — see `e2e/tests/mobile/`).
+They live in one place: [README — Conventions & known traps](README.md#conventions--known-traps-lessons).
+The dialog and calendar specifics are in the instruction file's **App anchors**.
 
 ## Run commands (from `Source/Client/pot-react`)
 
-```bash
-npm run e2e:preflight                         # environment check before a run (read-only)
-npm run e2e:chromium                          # fastest loop (one project)
-npx playwright test <path> --project=chromium # targeted file
-npm run e2e:mobile                            # mobile projects
-npm run e2e:all:dev                           # full 4-project matrix (the gate)
-npm run e2e:all:dev:log                       # as e2e:all:dev, capturing console + port timeline
-npm run e2e:prodlike                          # built-client subset (on-demand)
-```
+Every script and what each does: [README — Quick Start](README.md#quick-start).
 
 Validate the way the repo does: targeted chromium -> all 4 projects -> (for a gate) the full
 matrix twice / three consecutive clean runs. **No flaky tests**: fix the root cause; a retry

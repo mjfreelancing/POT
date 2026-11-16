@@ -655,7 +655,19 @@ records the harness decision — authorization cases generated from the contract
 tenant scope resolved from the model, coverage completeness decided by the harness rather than by whoever
 wrote a case. `aspnetcore-integration-tests.instructions.md` now cites it, plus ADR-0037 for which tests
 belong in the project and ADR-0051 for scenario provisioning, and keeps the rules while the reasoning they
-used to carry lives in the record. Remaining: `e2e`, then `docker`.
+used to carry lives in the record. Remaining: `docker`.
+
+**Stage 4 complete 2026-11-16 — the E2E split.** The instruction, `e2e/README.md` and `e2e/AUTHORING.md`
+overlapped on five facts: isolation classes, locator preference, run commands, known traps and
+data-readiness. They now divide by kind. The instruction holds the rules an agent must follow, citing
+ADR-0040 (one shared stack), ADR-0041 (the prodlike completion gate), ADR-0042 (classify before writing)
+and ADR-0045 (no shared auth state). The README holds architecture, config values, quick start, run
+hygiene, known traps and troubleshooting. AUTHORING holds the day-to-day recipes. The instruction lost
+the port-9323 residency explanation and the abandoned-daemon story — both already in the README's run
+hygiene and troubleshooting — and its own statement of the config values. AUTHORING lost its traps and
+run-command lists, which duplicated the README; the four traps only it carried (the substring `hasText`
+match, the shared table-description text, the Radix pointerup mechanism, the desktop-only skip) moved
+into the README's list before the section was replaced by a link.
 
 **Checklist per instruction file:**
 

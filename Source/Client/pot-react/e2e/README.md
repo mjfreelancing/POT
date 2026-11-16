@@ -311,6 +311,17 @@ exists to prevent.
   behind a test.
 - **URL state**: the `accountId` query param is the single render-time source of truth for
   account filters — assert URL + visible state after each filter change.
+- **`locator.filter({ hasText })` is a substring match** — anchor with `^...$`, or an exact
+  whole-text XPath, when the text could be a prefix of a sibling (calendar day `1` also matches
+  10-19 and 21).
+- **A table description cell shares its text with badges and popovers** — use substring
+  `getByText`, not `{ exact: true }`.
+- **Radix `Select`** selects on pointerup only when a same-node pointerdown set
+  `pointerTypeRef` to `'mouse'`, and `evaluate()` has no actionability retry, so a dispatched
+  click silently drops. That is why `selectRadixOption` (`e2e/helpers/radix.ts`) gates on
+  `data-highlighted`, focuses the option, presses Enter and then waits for `toBeHidden`.
+- **Desktop-only flows**: `test.skip(isMobileProject(testInfo), '...')` — mobile runs the card
+  grid instead (`e2e/tests/mobile/`).
 
 ---
 
