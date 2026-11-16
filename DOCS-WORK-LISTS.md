@@ -648,8 +648,14 @@ project files and now has one citable home. `dotnet-tests.instructions.md` cites
 split and ADR-0057 for the stack, instead of restating why MTP is off. Its Verify section is marked **not
 in use today** — no project references Verify — so it reads as guidance for when a snapshot assertion is
 the right tool, which is what it is for. `client-tests.instructions.md` needed no change: it states
-conventions with no decision behind them, and no ADR exists for the client test stack. Remaining:
-`aspnetcore-integration-tests` and `e2e`.
+conventions with no decision behind them, and no ADR exists for the client test stack.
+
+[ADR-0058](Docs/adr/ADR-0058-hosted-integration-tests-derive-their-cases-and-isolation-checks-from-the-contract-and-the-model.md)
+records the harness decision — authorization cases generated from the contract and endpoint metadata,
+tenant scope resolved from the model, coverage completeness decided by the harness rather than by whoever
+wrote a case. `aspnetcore-integration-tests.instructions.md` now cites it, plus ADR-0037 for which tests
+belong in the project and ADR-0051 for scenario provisioning, and keeps the rules while the reasoning they
+used to carry lives in the record. Remaining: `e2e`, then `docker`.
 
 **Checklist per instruction file:**
 
