@@ -641,6 +641,16 @@ imports fixed, then a lint rule to keep it true — and it follows the brief's r
 changes. The rule and the code therefore disagree until that PRD completes; that is recorded rather than
 hidden.
 
+**Stage 4, test instruction files — two of four done 2026-11-15.**
+[ADR-0057](Docs/adr/ADR-0057-server-tests-run-on-xunit-v3-with-the-microsoft-testing-platform-turned-off.md)
+records the server test stack; the reason for `xunit.v3.mtp-off` was already written into all five test
+project files and now has one citable home. `dotnet-tests.instructions.md` cites ADR-0037 for the project
+split and ADR-0057 for the stack, instead of restating why MTP is off. Its Verify section is marked **not
+in use today** — no project references Verify — so it reads as guidance for when a snapshot assertion is
+the right tool, which is what it is for. `client-tests.instructions.md` needed no change: it states
+conventions with no decision behind them, and no ADR exists for the client test stack. Remaining:
+`aspnetcore-integration-tests` and `e2e`.
+
 **Checklist per instruction file:**
 
 - [ ] For each rule, name the decision it enforces. If a consequential decision has no ADR, raise one

@@ -5,12 +5,12 @@ applyTo: "Source/Server/*Tests/**/*.cs"
 
 # .NET test conventions
 
-Test projects: `Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`, `Pot.Shared.Tests` (in-process unit tests) and `Pot.AspNetCore.Integration.Tests` (hosted API; extra rules in `aspnetcore-integration-tests.instructions.md`). Shared cross-project helpers live in `Pot.TestUtils` and must stay general-purpose; project-specific helpers stay in the owning test project.
+Test projects: `Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`, `Pot.Shared.Tests` (in-process unit tests) and `Pot.AspNetCore.Integration.Tests` (hosted API; extra rules in `aspnetcore-integration-tests.instructions.md`) — one unit project per layer plus one hosted project (ADR-0037). Shared cross-project helpers live in `Pot.TestUtils` and must stay general-purpose; project-specific helpers stay in the owning test project.
 
 ## Scope and structure
 
 - Tests are deterministic and isolated from external systems; assert behavior and contracts, not implementation details.
-- Keep unit and integration tests in separate projects. Put a test in the nearest layer-specific project.
+- Keep unit and integration tests in separate projects. Put a test in the nearest layer-specific project (ADR-0037).
   - `Pot.App.Tests` validate `EnrichedResult` success and failure semantics.
   - `Pot.Data.Tests` validate specification and query behavior without leaking API-layer concerns.
 - Outer classes are named `<Type>Fixture` (`*Fixture.cs`), with nested classes grouped by method or scenario under test.
@@ -24,13 +24,17 @@ Test projects: `Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`, `Pot.S
 
 ## xUnit v3 specifics
 
-- Packages: `xunit.v3.mtp-off` + `xunit.runner.visualstudio` + `Microsoft.NET.Test.Sdk`. The `mtp-off` variant is deliberate: v3 defaults to Microsoft Testing Platform, and on .NET 10+ an MTP-enabled project cannot run through the VSTest target that `dotnet test`, `--collect` and `--settings` rely on.
+- Packages: `xunit.v3.mtp-off` + `xunit.runner.visualstudio` + `Microsoft.NET.Test.Sdk`. Never reference plain `xunit.v3` or v2's `xunit`: v3 enables the Microsoft Testing Platform by default, and an MTP-enabled project cannot run through the VSTest target that `dotnet test --filter`, `--collect` and `--settings` use (ADR-0057).
 - v3 test projects must set `<OutputType>Exe</OutputType>` or the build fails.
 - `IAsyncLifetime.InitializeAsync` returns `ValueTask`. Disposal comes from `IAsyncDisposable`, implemented explicitly as `async ValueTask IAsyncDisposable.DisposeAsync()`.
 - Pass `TestContext.Current.CancellationToken` to awaited calls that accept a token (analyzer xUnit1051). If a fixture declares its own nested `TestContext` type, qualify it as `Xunit.TestContext.Current.CancellationToken`.
 - **Logging assertions are an open decision - ask the developer before writing new ones.** The capture technique (`AllOverIt.Logging.Testing.Extensions.LoggerExtensions.CaptureLogCalls` / `CaptureLogCallsAsync` returning `LoggerCallContext`) is under review and therefore not in use: every existing call site is commented out behind a `TODO(logging)` marker. No project references the `AllOverIt.Logging.Testing` package, so adopting the technique also means adding that dependency. Do not uncomment those tests, add new usages, or add the package without the developer's decision. Until that decision is made, assert on logs by reading `ReceivedCalls()` off the `ILogger<T>` substitute.
 
 ## Snapshot testing (Verify)
+
+**Not in use today.** No project references Verify and no snapshot exists; the rules below are guidance for
+when a snapshot assertion is the right tool, not a description of the current stack. Adopting it means
+adding the package to the project that needs it and committing the approved snapshots beside the test.
 
 - Prefer one `await Verifier.Verify(content)` over several `ShouldContain`/`ShouldBe` checks when asserting generated output (diagram text, serialized JSON, reports, templates). The test method is `async Task`.
 - Do not mix snapshot and manual string assertions in the same test.
