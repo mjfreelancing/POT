@@ -10,13 +10,13 @@ type IdentityLike = {
 describe('createRowIdGetter', () => {
   test('returns rowId as string for string row ids', () => {
     const getRowId = createRowIdGetter<
-      IdentityLike & { rowId: string; etag: bigint }
+      IdentityLike & { rowId: string; etag: number }
     >();
 
     const result = getRowId(
       {
         rowId: 'account-1',
-        etag: 0n,
+        etag: 0,
       },
       0,
     );
@@ -30,7 +30,7 @@ describe('createRowIdGetter', () => {
     const result = getRowId(
       {
         rowId: 42,
-        etag: 0n,
+        etag: 0,
       } as unknown as Identity,
       0,
     );
@@ -38,3 +38,4 @@ describe('createRowIdGetter', () => {
     expect(result).toBe('42');
   });
 });
+

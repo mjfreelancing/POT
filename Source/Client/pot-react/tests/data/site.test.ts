@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { BaseSiteSchema, DeleteSiteSchema, EditSiteSchema, SiteSchema } from '@/data/site';
+import {
+  BaseSiteSchema,
+  DeleteSiteSchema,
+  EditSiteSchema,
+  SiteSchema,
+} from '@/data/site';
 
 describe('site schemas', () => {
   test('parses valid site payloads', () => {
@@ -15,14 +20,14 @@ describe('site schemas', () => {
       EditSiteSchema.parse({
         name: 'HQ',
         description: 'Main office',
-        etag: 2n,
+        etag: 2,
       }),
     ).toBeTruthy();
 
     expect(
       SiteSchema.parse({
         rowId: 'site-1',
-        etag: 3n,
+        etag: 3,
         name: 'HQ',
         description: 'Main office',
       }),
@@ -31,7 +36,7 @@ describe('site schemas', () => {
 
   test('rejects invalid site payloads', () => {
     expect(() => BaseSiteSchema.parse({ name: '' })).toThrow();
-    expect(() => EditSiteSchema.parse({ name: 'HQ', etag: 2 })).toThrow();
+    expect(() => EditSiteSchema.parse({ name: 'HQ' })).toThrow();
     expect(() => SiteSchema.parse({ name: 'HQ' })).toThrow();
   });
 

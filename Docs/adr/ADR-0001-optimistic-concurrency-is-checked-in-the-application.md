@@ -65,9 +65,9 @@ realistic alternatives.
   stale tag can still match.
 - Bad, because the value is generated from the wall clock rather than the application's time provider,
   so the business clock does not govern it and a clock adjustment is written into the data.
-- Neutral, because the client receives the value as a plain number; most of its schemas type it as a
-  `bigint` while one types it as a number, which is a typing inconsistency rather than a behaviour
-  difference at current magnitudes.
+- Neutral, because the client receives the value as a plain number, which is the only numeric type
+  JSON carries, so no conversion stands between the response and the next request. A value above 2^53
+  would lose precision, and the tag is a millisecond timestamp, so it stays far below that.
 
 ### Confirmation
 

@@ -20,7 +20,7 @@ describe('useSite hook composition', () => {
       isPending: false,
       data: new SuccessResult({
         rowId: '44444444-4444-4444-4444-444444444444',
-        etag: 2n,
+        etag: 2,
       }),
     };
 
@@ -37,3 +37,4 @@ describe('useSite hook composition', () => {
     expect(result.current.data).toBe(mutationResult.data);
   });
 });
+

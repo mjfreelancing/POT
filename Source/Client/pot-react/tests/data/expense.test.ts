@@ -31,7 +31,7 @@ describe('expense schemas and comparator', () => {
     expect(
       EditExpenseSchema.parse({
         ...base,
-        etag: 1n,
+        etag: 1,
         excludeFromCalcs: false,
         accountRowId: 'acc-1',
       }),
@@ -41,7 +41,7 @@ describe('expense schemas and comparator', () => {
       ExpenseSchema.parse({
         ...base,
         rowId: 'exp-1',
-        etag: 2n,
+        etag: 2,
         excludeFromCalcs: false,
         account: { rowId: 'acc-1', description: 'Main' },
         accrued: 12.5,
@@ -104,3 +104,4 @@ describe('expense schemas and comparator', () => {
     expect(compareExpenseNextDue(sameDayA, sameDayB)).toBeLessThan(0);
   });
 });
+

@@ -19,7 +19,7 @@ describe('site user schemas', () => {
         status: 'Enabled',
         lastLoggedInUtc: null,
         rowId: '550e8400-e29b-41d4-a716-446655440000',
-        etag: 1n,
+        etag: 1,
       }),
     ).toBeTruthy();
   });
@@ -35,12 +35,12 @@ describe('site user schemas', () => {
   });
 
   test('parses a valid user role update payload', () => {
-    expect(userRoleUpdateSchema.parse({ etag: 2n, roleIds: [] })).toBeTruthy();
+    expect(userRoleUpdateSchema.parse({ etag: 2, roleIds: [] })).toBeTruthy();
   });
 
   test('parses a valid user status update payload', () => {
     expect(
-      userStatusUpdateSchema.parse({ etag: 2n, status: 'Disabled' }),
+      userStatusUpdateSchema.parse({ etag: 2, status: 'Disabled' }),
     ).toBeTruthy();
   });
 
@@ -56,11 +56,12 @@ describe('site user schemas', () => {
     ).toThrow();
 
     expect(() =>
-      userRoleUpdateSchema.parse({ etag: 1n, roleIds: ['not-uuid'] }),
+      userRoleUpdateSchema.parse({ etag: 1, roleIds: ['not-uuid'] }),
     ).toThrow();
 
     expect(() =>
-      userStatusUpdateSchema.parse({ etag: 1n, status: 'Pending' }),
+      userStatusUpdateSchema.parse({ etag: 1, status: 'Pending' }),
     ).toThrow();
   });
 });
+

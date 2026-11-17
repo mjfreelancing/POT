@@ -15,9 +15,9 @@ type TestItem = {
 describe('useAccountFilter', () => {
   test('builds accountsInItems from used accounts sorted by description', () => {
     const accounts = [
-      createAccountWithIdentity('a-2', 'Zeta', { etag: 1n }),
-      createAccountWithIdentity('a-1', 'Alpha', { etag: 1n }),
-      createAccountWithIdentity('a-3', 'Beta', { etag: 1n }),
+      createAccountWithIdentity('a-2', 'Zeta', { etag: 1 }),
+      createAccountWithIdentity('a-1', 'Alpha', { etag: 1 }),
+      createAccountWithIdentity('a-3', 'Beta', { etag: 1 }),
     ];
 
     const items: TestItem[] = [
@@ -45,7 +45,7 @@ describe('useAccountFilter', () => {
   });
 
   test('includes Not Assigned virtual account when unassigned items exist', () => {
-    const accounts = [createAccountWithIdentity('a-1', 'Alpha', { etag: 1n })];
+    const accounts = [createAccountWithIdentity('a-1', 'Alpha', { etag: 1 })];
     const items: TestItem[] = [
       { id: '1', account: { rowId: 'a-1' } },
       { id: '2', account: null },
@@ -69,8 +69,8 @@ describe('useAccountFilter', () => {
 
   test('filters to selected account id when account is selected', () => {
     const accounts = [
-      createAccountWithIdentity('a-1', 'Alpha', { etag: 1n }),
-      createAccountWithIdentity('a-2', 'Beta', { etag: 1n }),
+      createAccountWithIdentity('a-1', 'Alpha', { etag: 1 }),
+      createAccountWithIdentity('a-2', 'Beta', { etag: 1 }),
     ];
     const items: TestItem[] = [
       { id: '1', account: { rowId: 'a-1' } },
@@ -96,7 +96,7 @@ describe('useAccountFilter', () => {
   });
 
   test('filters to unassigned items when Not Assigned is selected', () => {
-    const accounts = [createAccountWithIdentity('a-1', 'Alpha', { etag: 1n })];
+    const accounts = [createAccountWithIdentity('a-1', 'Alpha', { etag: 1 })];
     const items: TestItem[] = [
       { id: '1', account: { rowId: 'a-1' } },
       { id: '2', account: null },
@@ -122,8 +122,8 @@ describe('useAccountFilter', () => {
 
   test('clears selected account when it no longer exists in accountsInItems', () => {
     const accounts = [
-      createAccountWithIdentity('a-1', 'Alpha', { etag: 1n }),
-      createAccountWithIdentity('a-2', 'Beta', { etag: 1n }),
+      createAccountWithIdentity('a-1', 'Alpha', { etag: 1 }),
+      createAccountWithIdentity('a-2', 'Beta', { etag: 1 }),
     ];
     const onAccountChange = vi.fn();
 
@@ -173,7 +173,7 @@ describe('useAccountFilter', () => {
 
     const { result } = renderHook(() =>
       useAccountFilter({
-        accounts: [createAccountWithIdentity('a-1', 'Alpha', { etag: 1n })],
+        accounts: [createAccountWithIdentity('a-1', 'Alpha', { etag: 1 })],
         items: [] as TestItem[],
         selectedAccountId: null,
         onAccountChange,
@@ -187,3 +187,4 @@ describe('useAccountFilter', () => {
     expect(onAccountChange).toHaveBeenCalledWith('a-1');
   });
 });
+

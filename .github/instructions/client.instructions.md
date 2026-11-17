@@ -35,6 +35,8 @@ Client commands must be run from `Source/Client/pot-react`: `npm run test`, `npm
 `npm run lint` enforces the type-alias rule (`consistent-type-definitions`), type-only imports, unused variables and import order; the rest below is review.
 
 - Prefer explicit types and `type` aliases. No `any` unless unavoidable at a boundary.
+- A type or schema that describes an API payload mirrors the JSON the server sends. An `etag` is a
+  `number`, never a `bigint`: JSON carries no bigint, so a `z.bigint()` schema rejects a real response.
 - Exported utilities are function declarations, not exported arrow functions. If an exception is required, state the reason in your response first.
 - Small local object-factory helpers may use concise implicit-return arrows.
 - Always use braces on `if`, even single-line branches.

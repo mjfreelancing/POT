@@ -4,7 +4,7 @@ const SettingValueSchema = z.union([z.boolean(), z.number(), z.string()]);
 
 const SettingSchema = z.object({
   rowId: z.string().optional(),
-  etag: z.bigint().optional(),
+  etag: z.number().optional(),
   category: z.string(),
   key: z.string(),
   value: SettingValueSchema,
@@ -17,7 +17,7 @@ const SettingsResponseSchema = z.object({
 
 const UpdateSettingRequestSchema = z.object({
   value: z.string(),
-  etag: z.bigint().nullable().optional(),
+  etag: z.number().nullable().optional(),
 });
 
 type SettingValue = z.infer<typeof SettingValueSchema>;
@@ -32,3 +32,4 @@ export {
   UpdateSettingRequestSchema,
 };
 export type { Setting, SettingsResponse, SettingValue, UpdateSettingRequest };
+

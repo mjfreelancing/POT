@@ -35,7 +35,7 @@ describe('useUsers hook composition', () => {
       data: new SuccessResult([
         {
           rowId: '11111111-1111-1111-1111-111111111111',
-          etag: 0n,
+          etag: 0,
           username: 'pending.user',
           displayName: 'Pending User',
           email: 'pending.user@example.com',
@@ -62,7 +62,7 @@ describe('useUsers hook composition', () => {
       isPending: false,
       data: new SuccessResult({
         rowId: '22222222-2222-2222-2222-222222222222',
-        etag: 1n,
+        etag: 1,
       }),
     };
 
@@ -82,7 +82,7 @@ describe('useUsers hook composition', () => {
       isPending: false,
       data: new SuccessResult({
         rowId: '33333333-3333-3333-3333-333333333333',
-        etag: 2n,
+        etag: 2,
       }),
     };
 
@@ -138,3 +138,4 @@ describe('useUsers hook composition', () => {
     expect(result.current.data).toBe(mutationResult.data);
   });
 });
+

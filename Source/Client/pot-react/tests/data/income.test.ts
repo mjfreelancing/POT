@@ -29,7 +29,7 @@ describe('income schemas and comparator', () => {
     expect(
       EditIncomeSchema.parse({
         ...base,
-        etag: 1n,
+        etag: 1,
         excludeFromCalcs: false,
         accountRowId: 'acc-1',
       }),
@@ -39,7 +39,7 @@ describe('income schemas and comparator', () => {
       IncomeSchema.parse({
         ...base,
         rowId: 'inc-1',
-        etag: 2n,
+        etag: 2,
         excludeFromCalcs: false,
         account: { rowId: 'acc-1', description: 'Main' },
       }),
@@ -100,3 +100,4 @@ describe('income schemas and comparator', () => {
     expect(compareIncomeNextDue(sameDayA, sameDayB)).toBeLessThan(0);
   });
 });
+

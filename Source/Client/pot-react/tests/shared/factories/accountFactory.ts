@@ -3,7 +3,7 @@ import type { Account } from '@/data';
 function createAccount(overrides: Partial<Account> = {}): Account {
   return {
     rowId: 'account-1',
-    etag: 0n,
+    etag: 0,
     description: 'Default account',
     balance: 0,
     reserved: 0,
@@ -31,3 +31,4 @@ function createAccountWithIdentity(
 }
 
 export { createAccount, createAccountWithIdentity };
+

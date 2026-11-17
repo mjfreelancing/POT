@@ -4,7 +4,7 @@ import { AccrualPolicy, Frequency } from '@/lib';
 function createExpense(overrides: Partial<Expense> = {}): Expense {
   return {
     rowId: 'expense-1',
-    etag: 0n,
+    etag: 0,
     description: 'Default expense',
     nextDue: '2026-01-01',
     accrualStart: null,
@@ -26,3 +26,4 @@ function createExpense(overrides: Partial<Expense> = {}): Expense {
 }
 
 export { createExpense };
+

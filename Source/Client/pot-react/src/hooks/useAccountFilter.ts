@@ -131,7 +131,7 @@ function useAccountFilter<T extends ItemWithAccount>({
         available: 0,
         linkedExpenses: 0,
         linkedIncomes: 0,
-        etag: 0n,
+        etag: 0,
       });
     }
     return accountsInUse;

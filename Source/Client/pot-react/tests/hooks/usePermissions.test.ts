@@ -23,14 +23,14 @@ function createMockUserStoreState(
     userInfo: permissions
       ? ({
           rowId: 'user-1',
-          etag: 0n,
+          etag: 0,
           username: 'test-user',
           displayName: 'Test User',
           email: 'test@example.com',
           permissions,
           site: {
             rowId: 'site-1',
-            etag: 0n,
+            etag: 0,
             name: 'Test Site',
           },
         } as User)
@@ -112,3 +112,4 @@ describe('usePermissions', () => {
     expect(result.current.hasAllPermissions([])).toBe(true);
   });
 });
+

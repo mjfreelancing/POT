@@ -17,12 +17,12 @@ describe('account schemas and comparator', () => {
 
     expect(CreateAccountSchema.parse(base)).toEqual(base);
 
-    expect(EditAccountSchema.parse({ ...base, etag: 1n }).etag).toBe(1n);
+    expect(EditAccountSchema.parse({ ...base, etag: 1 }).etag).toBe(1);
 
     const parsed = AccountSchema.parse({
       ...base,
       rowId: 'account-1',
-      etag: 2n,
+      etag: 2,
       totalExpenseAccrued: 5,
       totalArrears: 2,
       totalCommitted: 7,
@@ -37,8 +37,8 @@ describe('account schemas and comparator', () => {
 
   test('rejects invalid account payloads', () => {
     expect(() => CreateAccountSchema.parse({})).toThrow();
-    expect(() => EditAccountSchema.parse({ etag: 1n })).toThrow();
-    expect(() => AccountSchema.parse({ rowId: 'x', etag: 1n })).toThrow();
+    expect(() => EditAccountSchema.parse({ etag: 1 })).toThrow();
+    expect(() => AccountSchema.parse({ rowId: 'x', etag: 1 })).toThrow();
   });
 
   test('compareAccountDescription sorts by description (case-insensitive)', () => {
@@ -63,3 +63,4 @@ describe('account schemas and comparator', () => {
     ).toBe(0);
   });
 });
+

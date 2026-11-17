@@ -50,7 +50,7 @@ type ReminderSettingKey = 'Enabled' | 'ReminderDays' | 'LocalHourTrigger';
 
 type ReminderSettingRecord = {
   rowId?: string;
-  etag?: bigint;
+  etag?: number;
   value: boolean | number;
 };
 
@@ -451,7 +451,7 @@ function toReminderSettingRecord(
   setting:
     | {
         rowId?: string;
-        etag?: bigint;
+        etag?: number;
         value: boolean | number | string;
       }
     | undefined,
@@ -521,3 +521,4 @@ function formatHourLabel(hour: number): string {
 }
 
 export default BudgetRemindersForm;
+

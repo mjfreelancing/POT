@@ -5,7 +5,7 @@ const RowIdSchema = z.object({
 });
 
 const EtagSchema = z.object({
-  etag: z.bigint(),
+  etag: z.number(),
 });
 
 const IdentitySchema = RowIdSchema.merge(EtagSchema);
@@ -16,3 +16,4 @@ type Identity = z.infer<typeof IdentitySchema>;
 
 export { EtagSchema, IdentitySchema, RowIdSchema };
 export type { Etag, Identity, RowId };
+

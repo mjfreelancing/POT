@@ -93,7 +93,7 @@ describe('PendingApprovalMobileCard', () => {
   test('approves the user with the pending etag and invalidates the approvals cache', async () => {
     const pendingUser = createPendingApprovalUser({
       rowId: 'user-42',
-      etag: 7n,
+      etag: 7,
       username: 'gamma.pending',
     });
 
@@ -106,7 +106,7 @@ describe('PendingApprovalMobileCard', () => {
     expect(mutateAsyncMock).toHaveBeenCalledWith({
       id: 'user-42',
       data: {
-        etag: 7n,
+        etag: 7,
         status: 'Approved',
       },
     });
@@ -118,7 +118,7 @@ describe('PendingApprovalMobileCard', () => {
   test('rejects the user with the pending etag and invalidates the approvals cache', async () => {
     const pendingUser = createPendingApprovalUser({
       rowId: 'user-43',
-      etag: 8n,
+      etag: 8,
       username: 'delta.pending',
     });
 
@@ -131,7 +131,7 @@ describe('PendingApprovalMobileCard', () => {
     expect(mutateAsyncMock).toHaveBeenCalledWith({
       id: 'user-43',
       data: {
-        etag: 8n,
+        etag: 8,
         status: 'Rejected',
       },
     });
@@ -157,3 +157,4 @@ describe('PendingApprovalMobileCard', () => {
     expect(toast).not.toHaveBeenCalled();
   });
 });
+

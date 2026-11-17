@@ -9,14 +9,14 @@ const pendingApprovalUserSchema = z.object({
   username: z.string(),
   email: z.string().email(),
   rowId: z.string().uuid(),
-  etag: z.bigint(),
+  etag: z.number(),
 });
 
 type PendingApprovalUser = z.infer<typeof pendingApprovalUserSchema>;
 
 // Pending user status update schema for PUT /api/approvals/{userId}/status
 const pendingUserStatusUpdateSchema = z.object({
-  etag: z.bigint(),
+  etag: z.number(),
   status: approvalStatusSchema,
 });
 
@@ -29,3 +29,4 @@ export {
 };
 
 export type { ApprovalStatus, PendingApprovalUser, PendingUserStatusUpdate };
+

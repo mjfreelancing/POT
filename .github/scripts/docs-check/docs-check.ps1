@@ -285,6 +285,47 @@ function Format-MarkdownCell {
     return ($Value -replace '\|', '\|')
 }
 
+function Format-MarkdownRow {
+    param([string[]] $Cells, [int[]] $Widths)
+
+    $padded = for ($column = 0; $column -lt $Cells.Count; $column++) {
+        $Cells[$column].PadRight($Widths[$column])
+    }
+
+    return '| ' + ($padded -join ' | ') + ' |'
+}
+
+function Format-MarkdownTable {
+    param([string[]] $Header, [object[]] $Rows)
+
+    # The documentation set is formatted by an editor that pads every cell to the width of its column,
+    # and a column is never narrower than the three dashes a delimiter row needs. The index is written
+    # the same way, so a save leaves it alone and this check compares equal.
+    $widths = for ($column = 0; $column -lt $Header.Count; $column++) {
+        $width = $Header[$column].Length
+        foreach ($row in $Rows) {
+            $cellWidth = ([string] $row[$column]).Length
+            if ($cellWidth -gt $width) {
+                $width = $cellWidth
+            }
+        }
+        [Math]::Max($width, 3)
+    }
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add((Format-MarkdownRow -Cells $Header -Widths $widths))
+
+    $delimiters = @(for ($column = 0; $column -lt $Header.Count; $column++) { '-' * $widths[$column] })
+    $lines.Add((Format-MarkdownRow -Cells $delimiters -Widths $widths))
+
+    foreach ($row in $Rows) {
+        $cells = @(for ($column = 0; $column -lt $Header.Count; $column++) { [string] $row[$column] })
+        $lines.Add((Format-MarkdownRow -Cells $cells -Widths $widths))
+    }
+
+    return $lines
+}
+
 function Format-AdrIndex {
     param($Records, [string] $Eol)
 
@@ -292,6 +333,7 @@ function Format-AdrIndex {
     $Records = @($Records | Where-Object { $null -ne $_ })
 
     $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add('')
     $lines.Add('_Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.ps1`. Do not edit by hand._')
     $lines.Add('')
 
@@ -313,12 +355,16 @@ function Format-AdrIndex {
         $areaLabel = $area.Substring(0, 1).ToUpperInvariant() + $area.Substring(1)
         $lines.Add("### ${areaLabel}")
         $lines.Add('')
-        $lines.Add('| ADR | Title | Status |')
-        $lines.Add('| --- | --- | --- |')
 
-        foreach ($record in $areaRecords) {
-            $title = Format-MarkdownCell -Value $record.Title
-            $lines.Add("| [$($record.Id)]($($record.FileName)) | ${title} | $($record.Status) |")
+        $rows = @(
+            foreach ($record in $areaRecords) {
+                $title = Format-MarkdownCell -Value $record.Title
+                , @("[$($record.Id)]($($record.FileName))", $title, $record.Status)
+            }
+        )
+
+        foreach ($line in (Format-MarkdownTable -Header @('ADR', 'Title', 'Status') -Rows $rows)) {
+            $lines.Add($line)
         }
 
         $lines.Add('')
@@ -355,17 +401,20 @@ function Format-AdrIndex {
         $lines.Add('')
     }
     else {
-        $lines.Add('| PRD | ADRs |')
-        $lines.Add('| --- | --- |')
+        $rows = @(
+            foreach ($prdId in $prdIds) {
+                $links = @(
+                    $prdRecords |
+                    Where-Object { $_.RelatedPrds -contains $prdId } |
+                    Sort-Object Number |
+                    ForEach-Object { "[$($_.Id)]($($_.FileName))" }
+                )
+                , @($prdId, ($links -join ', '))
+            }
+        )
 
-        foreach ($prdId in $prdIds) {
-            $links = @(
-                $prdRecords |
-                Where-Object { $_.RelatedPrds -contains $prdId } |
-                Sort-Object Number |
-                ForEach-Object { "[$($_.Id)]($($_.FileName))" }
-            )
-            $lines.Add("| ${prdId} | $($links -join ', ') |")
+        foreach ($line in (Format-MarkdownTable -Header @('PRD', 'ADRs') -Rows $rows)) {
+            $lines.Add($line)
         }
 
         $lines.Add('')

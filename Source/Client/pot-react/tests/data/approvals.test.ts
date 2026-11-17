@@ -15,13 +15,13 @@ describe('approval schemas', () => {
         username: 'jane',
         email: 'jane@example.com',
         rowId: '550e8400-e29b-41d4-a716-446655440000',
-        etag: 1n,
+        etag: 1,
       }),
     ).toBeTruthy();
 
     expect(
       pendingUserStatusUpdateSchema.parse({
-        etag: 2n,
+        etag: 2,
         status: 'Rejected',
       }),
     ).toBeTruthy();
@@ -35,7 +35,8 @@ describe('approval schemas', () => {
     ).toThrow();
 
     expect(() =>
-      pendingUserStatusUpdateSchema.parse({ etag: 1n, status: 'Enabled' }),
+      pendingUserStatusUpdateSchema.parse({ etag: 1, status: 'Enabled' }),
     ).toThrow();
   });
 });
+

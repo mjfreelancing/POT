@@ -23,21 +23,21 @@ describe('user schemas and comparator', () => {
       EditUserSchema.parse({
         displayName: 'Jane Doe',
         email: 'jane@example.com',
-        etag: 1n,
+        etag: 1,
       }),
     ).toBeTruthy();
 
     expect(
       UserSchema.parse({
         rowId: 'user-1',
-        etag: 2n,
+        etag: 2,
         username: 'jane',
         displayName: 'Jane Doe',
         email: 'jane@example.com',
         permissions: ['users.read'],
         site: {
           rowId: 'site-1',
-          etag: 3n,
+          etag: 3,
           name: 'HQ',
           description: 'Main site',
         },
@@ -52,7 +52,7 @@ describe('user schemas and comparator', () => {
       EditUserSchema.parse({ displayName: 'Jane', email: 'x' }),
     ).toThrow();
 
-    expect(() => UserSchema.parse({ rowId: 'user-1', etag: 1n })).toThrow();
+    expect(() => UserSchema.parse({ rowId: 'user-1', etag: 1 })).toThrow();
   });
 
   test('requires a password to delete a user', () => {
@@ -68,7 +68,9 @@ describe('user schemas and comparator', () => {
       DeleteOwnAccountSchema.parse({ username: 'maria', password: 'secret' }),
     ).toEqual({ username: 'maria', password: 'secret' });
 
-    expect(() => DeleteOwnAccountSchema.parse({ password: 'secret' })).toThrow();
+    expect(() =>
+      DeleteOwnAccountSchema.parse({ password: 'secret' }),
+    ).toThrow();
     expect(() => DeleteOwnAccountSchema.parse({ username: 'maria' })).toThrow();
   });
 

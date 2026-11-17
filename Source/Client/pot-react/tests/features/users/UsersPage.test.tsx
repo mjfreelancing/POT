@@ -105,10 +105,7 @@ vi.mock('@/features/users/components', () => ({
       <button type="button" onClick={() => onChangeRole(users[0])}>
         Change role for first user
       </button>
-      <button
-        type="button"
-        onClick={() => onDeleteUser?.(users[0])}
-      >
+      <button type="button" onClick={() => onDeleteUser?.(users[0])}>
         Delete first user
       </button>
     </div>
@@ -223,7 +220,7 @@ describe('UsersPage', () => {
     createSiteUser(),
     createSiteUser({
       rowId: '22222222-2222-2222-2222-222222222222',
-      etag: 2n,
+      etag: 2,
       username: 'alex',
       displayName: 'Alex Pine',
       email: 'alex@example.com',
@@ -338,7 +335,7 @@ describe('UsersPage', () => {
     expect(updateStatusMutateAsyncMock).toHaveBeenCalledWith({
       id: '11111111-1111-1111-1111-111111111111',
       data: {
-        etag: 1n,
+        etag: 1,
         status: 'Disabled',
       },
     });
@@ -389,7 +386,9 @@ describe('UsersPage', () => {
       screen.getByRole('button', { name: 'Delete first user' }),
     );
 
-    expect(screen.getByText('delete-dialog:Delete Maria Carter')).toBeInTheDocument();
+    expect(
+      screen.getByText('delete-dialog:Delete Maria Carter'),
+    ).toBeInTheDocument();
     expect(screen.getByText('delete-dialog-busy:false')).toBeInTheDocument();
     expect(deleteUserMock).not.toHaveBeenCalled();
   });
@@ -406,7 +405,9 @@ describe('UsersPage', () => {
 
     expect(deleteUserMock).toHaveBeenCalledWith('secret');
     expect(toastMock).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText('delete-dialog:Delete Maria Carter')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('delete-dialog:Delete Maria Carter'),
+    ).not.toBeInTheDocument();
   });
 
   test('keeps the delete dialog open and shows the refusal in it', async () => {
@@ -446,7 +447,9 @@ describe('UsersPage', () => {
     );
 
     expect(deleteUserMock).not.toHaveBeenCalled();
-    expect(screen.queryByText('delete-dialog:Delete Maria Carter')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('delete-dialog:Delete Maria Carter'),
+    ).not.toBeInTheDocument();
   });
 
   test('renders and dismisses page error sheet from error context', async () => {

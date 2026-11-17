@@ -8,13 +8,13 @@ describe('identity schemas', () => {
   });
 
   test('parses valid etag payload', () => {
-    expect(EtagSchema.parse({ etag: 1n })).toEqual({ etag: 1n });
+    expect(EtagSchema.parse({ etag: 1 })).toEqual({ etag: 1 });
   });
 
   test('parses valid identity payload', () => {
-    expect(IdentitySchema.parse({ rowId: 'row-1', etag: 2n })).toEqual({
+    expect(IdentitySchema.parse({ rowId: 'row-1', etag: 2 })).toEqual({
       rowId: 'row-1',
-      etag: 2n,
+      etag: 2,
     });
   });
 
@@ -22,11 +22,12 @@ describe('identity schemas', () => {
     expect(() => RowIdSchema.parse({ rowId: 123 })).toThrow();
   });
 
-  test('rejects invalid etag payload', () => {
-    expect(() => EtagSchema.parse({ etag: 2 })).toThrow();
+  test('rejects an etag that is not a number', () => {
+    expect(() => EtagSchema.parse({ etag: '2' })).toThrow();
   });
 
   test('rejects invalid identity payload', () => {
     expect(() => IdentitySchema.parse({ rowId: 'row-1' })).toThrow();
   });
 });
+
