@@ -29,9 +29,9 @@ write a username or site name in clear text. Production logs are read from conso
 Analytics, where they are kept longer and read more widely than the database.
 
 [ADR-0050](../adr/ADR-0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md) keeps bodies and
-headers out of the request log, and names these writes as outside its decision. The decision brief DD-08
-(answered 2026-11-06) chose option B, stop logging verification codes, and it is carried into this PRD.
-The raw refresh token was found later (review finding F-2) and is carried in with it.
+headers out of the request log, and names these writes as outside its decision. The decision that raised
+this PRD, answered 2026-11-06, was to stop logging verification codes, and it is carried into this PRD.
+The raw refresh token was found later, during the same review, and is carried in with it.
 
 Tracing makes the gap wider. Span tags, span events and metric dimensions are exported like log
 properties, so a rule that covers logs alone moves the problem rather than solving it.
@@ -73,7 +73,7 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
 | Request log              | Framework HTTP logging: method, path, query, status, duration; no body or headers                                    | ADR-0050                                                                      |
 | Correlation              | `CorrelationIdLogEnricher` tags entries from `HttpContext`, so entries written by queued email or workers carry none | `Pot.AspNetCore/Concerns/Logging/CorrelationIdLogEnricher.cs`                 |
 | Call logging             | 175 `LogCall` sites at `Information`; 35 pass an argument object                                                     | AllOverIt.Logging 9.4                                                         |
-| Credentials in logs      | Verification code (four sites), raw refresh token (one site); all through call-logging arguments                     | DD-08; `AuthService.cs:229`                                                   |
+| Credentials in logs      | Verification code (four sites), raw refresh token (one site); all through call-logging arguments                     | `AuthService.cs:229`, 4 sites                                                 |
 | Personal data in logs    | Usernames and site names in about eleven message templates, and in call-logging arguments                            | Repository                                                                    |
 | Source-generated logging | None; no `[LoggerMessage]` methods exist                                                                             | Repository                                                                    |
 | Tracing                  | None; no `ActivitySource`, OpenTelemetry or Application Insights package is referenced                               | Repository                                                                    |
@@ -125,13 +125,13 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
 ## Out Of Scope
 
 - The request log, which stays as ADR-0050 decides.
-- Hashing stored verification codes (DD-08 option C), unless discovery chooses to include it. The option:
+- Hashing stored verification codes, unless discovery chooses to include it. The option:
   HMAC-SHA256 under a server-held key, since an unkeyed hash of a six-digit code is brute-forced
   instantly, with a constant-time comparison; a migration for the column length and a new secret; codes
   active at deploy time stop working. The brief judged it of little value while the temporary password
   is stored only as a hash, so a code alone signs nobody in, and suggested folding it into PRD-0032 if
   that reworks credentials.
-- The verification-attempt limit not persisting across requests (review finding F-7).
+- The verification-attempt limit not persisting across requests.
 
 ## Related Documents
 

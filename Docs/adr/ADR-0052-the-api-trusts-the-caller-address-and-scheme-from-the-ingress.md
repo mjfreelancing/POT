@@ -66,8 +66,9 @@ infrastructure-as-code exists to check it.
   must be revisited if one is ever added.
 - Neutral, because the local compose proxy (`nginx.conf`) sets `Host`, `Upgrade` and `Connection` only, so
   local calls through it present the client container's address and always report `http`; locally every
-  anonymous caller therefore shares one rate-limit partition. Whether to forward `X-Forwarded-For` there
-  is an open follow-up in `DECISIONS-TO-DISCUSS.md` (forwarded headers, item 2).
+  anonymous caller therefore shares one rate-limit partition. The proxy does not forward
+  `X-Forwarded-For`: `$proxy_add_x_forwarded_for` appends to the header rather than replacing it, so with
+  `ForwardLimit` at 1 the address the API would record is the proxy's, not the caller's.
 
 ### Confirmation
 

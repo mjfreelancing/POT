@@ -28,7 +28,6 @@ not show whether they, or the other options below, were weighed when the engine 
 - No licence cost for a database that will be small at every environment.
 - Features the schema relies on: `citext` for case-insensitive text, and composite unique indexes over it.
 
-
 ## Considered Options
 
 1. PostgreSQL, run in a container locally and as a hosted server in production.
@@ -53,8 +52,8 @@ uniqueness of names alongside the application's own check. The same engine runs 
 - Good, because the local container and the hosted server are the same engine, so a query that works
   locally is not a different dialect in production.
 - Bad, because the engine version differs between environments: the local container and the integration
-  fixtures run 13, and the end-to-end stack runs 16. The deployment diagram labels the production server
-  17.6, which nothing else in the repository confirms. EF is told to target 13.6 (`SetPostgresVersion`).
+  fixtures run 13, the end-to-end stack runs 16, and production runs 17.11. EF is told to target 13.6
+  (`SetPostgresVersion`), so nothing above 13 exercises the queries locally, and 13 is past end of life.
 - Bad, because production requires SSL on the connection, so the connection configuration is not the same
   as the local one.
 - Bad, because another component to operate, back up and restore.
@@ -92,7 +91,5 @@ uniqueness of names alongside the application's own check. The same engine runs 
 
 ## More Information
 
-- The version target and the drift between environments are a separate, open item:
-  `DECISIONS-TO-DISCUSS.md` (DD-06).
 - Enforcing uniqueness in the database as well as by application checks is
   [ADR-0007](ADR-0007-uniqueness-is-enforced-by-the-database.md).

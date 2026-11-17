@@ -60,8 +60,9 @@ Conventions that apply to every entity are set once on the context rather than p
   both slower and wider than the contract.
 - Test: the data-layer fixtures run against the in-memory provider, so repository logic is covered
   without a container. That provider ignores `citext`, unique indexes and SQL translation, so those are
-  covered only by the hosted suite, which runs against a real PostgreSQL container. Whether that split is
-  the intended test strategy is still open (`DECISIONS-TO-DISCUSS.md`, DD-12d).
+  covered only by the hosted suite, which runs against a real PostgreSQL container. That split is the
+  intended strategy, and the limits of the in-memory provider are recorded in
+  [ADR-0037](ADR-0037-tests-are-per-layer-unit-projects-plus-one-hosted-integration-project.md).
 
 ## Pros and Cons of the Options
 

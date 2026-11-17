@@ -108,10 +108,3 @@ realistic alternatives.
 
 - Good: nothing to implement.
 - Bad: a stale edit overwrites silently, which is the failure this record exists to prevent.
-
-## More Information
-
-- The remaining gap, and the change that would close it — a concurrency token with a monotonic value,
-  plus a matching client type — is written up in `DECISIONS-TO-DISCUSS.md` (DD-02) and is awaiting a
-  decision. If it is adopted, this record is superseded rather than edited. That write-up says six update
-  paths compare the tag; the count is nine, and the write-up is the one that is stale.

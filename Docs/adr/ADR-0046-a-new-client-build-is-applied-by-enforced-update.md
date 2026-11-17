@@ -31,6 +31,7 @@ the client on an old build for as long as the user kept postponing it. The enfor
 
 - A deployment should reach users rather than leaving them on an old build indefinitely.
 - A reload should wait for a pause in the user's input where it can, so a half-typed form is not lost.
+
 ## Considered Options
 
 1. Detect a new build through both channels, and apply it by an update that cannot be postponed
@@ -72,7 +73,9 @@ deferral regardless.
 - Known limitation: no client build identifier reaches the server and no compatibility policy covers a
   breaking API change, so an old shell keeps calling a changed API until its enforced update applies —
   roughly ten minutes after a client deploy for an open tab, plus any gap between the separate server and
-  client deploy tasks (`.vscode/tasks.json`). Whether that skew is accepted or closed is not yet decided.
+  client deploy tasks (`.vscode/tasks.json`). The skew is accepted rather than closed:
+  [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md)
+  relies on this update to bound it, so weakening the update reopens that decision.
 
 ## Pros and Cons of the Options
 

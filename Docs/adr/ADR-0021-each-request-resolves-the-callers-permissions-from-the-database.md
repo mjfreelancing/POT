@@ -78,7 +78,7 @@ so the interface is shaped by the same answer that the server enforces.
   options are bound once into a singleton.
 - Bad, because a policy name is not checked against the permissions that exist: the policy provider turns
   any name it does not recognise into a requirement, so a misspelt name builds, is held by no one and
-  answers `403` to every caller. Whether to close that is open (`DECISIONS-TO-DISCUSS.md`, DD-09).
+  answers `403` to every caller.
 
 ### Confirmation
 

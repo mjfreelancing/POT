@@ -52,8 +52,8 @@ Stop and say so when it is not an ADR, naming where it belongs instead.
 
 ### 2. Take the next number
 
-List `Docs/adr/`, read the highest four-digit number after the `ADR-` prefix, and add one. Do not take the next number from the
-backlog in `DOCS-REORGANISATION-PLAN.md`: the folder is the authority.
+List `Docs/adr/`, read the highest four-digit number after the `ADR-` prefix, and add one. Do not take the next number from a
+plan or task list: the folder is the authority.
 
 ### 3. Write the file
 

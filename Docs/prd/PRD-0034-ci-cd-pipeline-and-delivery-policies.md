@@ -28,9 +28,9 @@ The project has grown more complex: about 50 ADRs, a server integration suite on
 four-project browser matrix with a production-build profile, a committed OpenAPI contract, and a
 documentation check. Several open items assume a pipeline exists to run their checks.
 
-The decision brief that raised this PRD (DD-05, answered 2026-11-06) chose option B as a starting
-direction. The owner has no fixed view beyond that. Whether delivery is automated too, and which policies
-apply, are for discovery. The brief's options were:
+The decision that raised this PRD, answered 2026-11-06, chose option B as a starting direction. The owner
+has no fixed view beyond that. Whether delivery is automated too, and which policies apply, are for
+discovery. The options considered were:
 
 - **A. Keep as-is.** Not chosen.
 - **B. A build-and-test workflow only.** It runs on pull requests and pushes to `main`:
@@ -41,6 +41,7 @@ apply, are for discovery. The brief's options were:
 
   Browser suites stay local and deployment is unchanged. Integration tests use Testcontainers, which
   work on GitHub's Ubuntu runners.
+
 - **C. B, plus image build and deployment from `main`.** Images are tagged with the commit SHA and
   deployed with `az containerapp update`, using OIDC federated credentials.
 - **Interim suggestion:** tag images with the commit SHA as well as `:latest`, which gives a rollback
@@ -48,19 +49,19 @@ apply, are for discovery. The brief's options were:
 
 ## What Is Known
 
-| Area                 | Fact                                                                                                                                       | Source                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| Pipelines            | None. `.github/workflows/` exists locally but is empty and untracked                                                                       | Repository                                               |
-| Image build and push | `azure-server-build-and-deploy` and `azure-client-build-and-deploy`: `docker build --no-cache` from the working tree, push `:latest` to GHCR | `.vscode/tasks.json`                                     |
-| Client build inputs  | The API base URL, timeout and nginx config are baked in as build arguments                                                                 | `.vscode/tasks.json`; `Source/Docker/Client/Dockerfile`  |
-| Deployment           | The Container Apps revision is switched by hand in the portal                                                                              | ADR-0031; ADR-0032                                       |
-| Migrations           | The server image runs the migration runner at start-up, then the API                                                                       | `Source/Docker/Server/entrypoint.sh`; ADR-0009           |
-| Server checks        | `dotnet build` and `dotnet test pot.sln`; integration tests need Docker (Testcontainers)                                                   | `.github/copilot-instructions.md`                        |
-| Client checks        | `lint`, `type:check`, `test` (Vitest) and `build`                                                                                          | `Source/Client/pot-react/package.json`                   |
-| Browser suites       | Dev matrix and production-build matrix, both run by hand; the production-build run gates client-changing PRDs                              | ADR-0041                                                 |
-| Contract             | The OpenAPI document is generated at build time and committed; nothing checks that it is current                                           | ADR-0049                                                 |
-| Documentation        | `docs-check` validates ADRs, links and citations; it is run by hand                                                                        | `.github/scripts/docs-check/`                            |
-| Secrets              | Secret values live outside the repository, in a platform store                                                                             | ADR-0025                                                 |
+| Area                 | Fact                                                                                                                                         | Source                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Pipelines            | None. `.github/workflows/` exists locally but is empty and untracked                                                                         | Repository                                              |
+| Image build and push | `azure-server-build-and-deploy` and `azure-client-build-and-deploy`: `docker build --no-cache` from the working tree, push `:latest` to GHCR | `.vscode/tasks.json`                                    |
+| Client build inputs  | The API base URL, timeout and nginx config are baked in as build arguments                                                                   | `.vscode/tasks.json`; `Source/Docker/Client/Dockerfile` |
+| Deployment           | The Container Apps revision is switched by hand in the portal                                                                                | ADR-0031; ADR-0032                                      |
+| Migrations           | The server image runs the migration runner at start-up, then the API                                                                         | `Source/Docker/Server/entrypoint.sh`; ADR-0009          |
+| Server checks        | `dotnet build` and `dotnet test pot.sln`; integration tests need Docker (Testcontainers)                                                     | `.github/copilot-instructions.md`                       |
+| Client checks        | `lint`, `type:check`, `test` (Vitest) and `build`                                                                                            | `Source/Client/pot-react/package.json`                  |
+| Browser suites       | Dev matrix and production-build matrix, both run by hand; the production-build run gates client-changing PRDs                                | ADR-0041                                                |
+| Contract             | The OpenAPI document is generated at build time and committed; nothing checks that it is current                                             | ADR-0049                                                |
+| Documentation        | `docs-check` validates ADRs, links and citations; it is run by hand                                                                          | `.github/scripts/docs-check/`                           |
+| Secrets              | Secret values live outside the repository, in a platform store                                                                               | ADR-0025                                                |
 
 ## Questions Discovery Must Answer
 
@@ -89,8 +90,8 @@ apply, are for discovery. The brief's options were:
 11. Which dependency and security checks are wanted (dependency updates, vulnerability scanning, secret
     scanning)?
 12. Which existing decisions or open items should be revisited once a pipeline exists? Candidates:
-    ADR-0031, ADR-0041's production-build gate, DD-06 (database version alignment) and DD-07 (generated
-    client types).
+    ADR-0031, ADR-0041's production-build gate, and aligning the database engine version between
+    environments.
 13. What is the budget for hosted-runner minutes and any paid services?
 
 ## Known Risks

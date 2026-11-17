@@ -61,8 +61,10 @@ work, and the browser calls the API's hostname directly.
   which works only because the client and API hostnames share one registrable domain.
 - Bad, because two deployments and two ingress configurations must be kept in step.
 - Bad, because the two images are built and pushed by separate tasks, so for a while after a deployment
-  the new API serves the old client (and a cached PWA shell keeps calling it); no compatibility policy
-  covers that window, which is the open question DD-14 in `DECISIONS-TO-DISCUSS.md`.
+  the new API serves the old client (and a cached PWA shell keeps calling it). No compatibility policy
+  covers that window, which
+  [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md)
+  accepts as a window of minutes rather than a problem to close.
 
 ### Confirmation
 
