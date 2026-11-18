@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Incomes.Update.EntityChecks;
@@ -92,7 +93,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
         incomeToUpdate.EndDate = input.EndDate;
         incomeToUpdate.Frequency = input.Frequency;
         incomeToUpdate.FrequencyCount = input.FrequencyCount;
-        incomeToUpdate.Amount = input.Amount;
+        incomeToUpdate.Amount = MonetaryRounding.Round(input.Amount);
         incomeToUpdate.Note = input.Note;
         incomeToUpdate.Account = incomeAccount;
     }

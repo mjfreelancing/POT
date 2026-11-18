@@ -1,18 +1,27 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Pot.App.Concerns.Time;
+using Pot.App.Errors;
 using Pot.App.Features.Accounts.GetAll;
 using Pot.App.Features.Accounts.GetAll.Models;
+using Pot.App.Features.Expenses.Create;
+using Pot.App.Features.Expenses.Create.EntityChecks;
 using Pot.App.Features.Expenses.GetAll;
+using Pot.App.Features.Expenses.GetAll.Mappings;
 using Pot.App.Features.Maintenance.Export.Accounts;
 using Pot.App.Features.Maintenance.Export.Expenses;
 using Pot.App.Features.Maintenance.Import.Models;
 using Pot.App.Features.Maintenance.Import.Reader;
 using Pot.App.Features.Maintenance.Metadata.Models;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
+using Pot.Data.Entities;
+using Pot.Data.Repositories.Accounts;
 using Pot.Shared.Enumerations;
+using Pot.Shared.Models;
 using Pot.TestUtils;
 using Shouldly;
 using System.IO.Compression;
+using ExpensesCreateInput = Pot.App.Features.Expenses.Create.Models.Input;
 using ExpensesOutput = Pot.App.Features.Expenses.GetAll.Models.Output;
 
 namespace Pot.App.Tests.Features.Maintenance;
@@ -116,6 +125,74 @@ public class ExportImportRoundTripFixture : PotFixtureBase
         row.Amount.ShouldBe(expense.Amount);
         row.Note.ShouldBe(expense.Note);
         row.AccountRowId.ShouldBe(accountRowId);
+    }
+
+    // The importers map a CSV row to the create service's input rather than to an entity, so an amount with three
+    // decimals is normalised on the way in and the export publishes what was stored without a rounding rule of its
+    // own. This runs a row through both halves to prove the file that comes back out carries two decimals.
+    [Fact]
+    public async Task Should_Export_An_Imported_Amount_With_Two_Decimals()
+    {
+        var account = EntityFactory.CreateAccount(EntityFactory.CreateSite(), "Everyday", 0.0d);
+
+        var accountRepository = Substitute.For<IPersistableAccountRepository>();
+        accountRepository
+            .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(account);
+
+        var preCreateChecker = Substitute.For<IPreCreateChecker>();
+        preCreateChecker
+            .CanSaveAsync(Arg.Any<ExpenseEntity>(), Arg.Any<CancellationToken>())
+            .Returns((ApiDetailError?)null);
+
+        var timeProvider = Substitute.For<ITimeProvider>();
+        timeProvider.GetLocalDateNow().Returns(new DateOnly(2025, 1, 1));
+
+        var createService = new CreateExpenseService(accountRepository, preCreateChecker, timeProvider,
+            Substitute.For<ILogger<CreateExpenseService>>());
+
+        var importInput = new ExpensesCreateInput
+        {
+            AccountRowId = account.RowId,
+            ExcludeFromCalcs = false,
+            Description = "Internet",
+            AccrualStart = new DateOnly(2025, 1, 1),
+            NextDue = new DateOnly(2025, 2, 1),
+            EndDate = null,
+            AccrualPolicy = AccrualPolicy.Automatic,
+            Frequency = Frequency.Months,
+            FrequencyCount = 1,
+            Amount = 10.005d,
+            Note = "Imported"
+        };
+
+        var createResult = await createService.CreateExpenseAsync(importInput, CancellationToken.None);
+
+        createResult.IsSuccess.ShouldBeTrue();
+
+        var storedExpense = account.Expenses.ShouldHaveSingleItem();
+
+        var accrualDetail = new ExpenseAccrualDetail
+        {
+            RowId = storedExpense.RowId,
+            Accrued = 0.0d,
+            Arrears = 0.0d
+        };
+
+        var expensesService = Substitute.For<IGetAllExpensesService>();
+        expensesService
+            .GetAllExpensesAsync(Arg.Any<CancellationToken>())
+            .Returns([storedExpense.MapToOutput(accrualDetail)]);
+
+        var exporter = new ExpensesExporter(expensesService);
+
+        var content = await exporter.ExportAllAsync(CancellationToken.None);
+
+        using var enumerator = new CsvRowEnumerator<ExpenseCsvRow, IExpenseCsvRow>(new MemoryStream(content));
+
+        var row = enumerator.ToArray().ShouldHaveSingleItem();
+
+        row.Amount.ShouldBe(10.01d);
     }
 
     // The import gate compares the package version against MetadataBase.CurrentVersion, so a

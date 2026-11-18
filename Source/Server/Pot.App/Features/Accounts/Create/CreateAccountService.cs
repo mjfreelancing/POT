@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Features.Accounts.Create.EntityChecks;
 using Pot.App.Features.Accounts.Create.Mappings;
 using Pot.App.Features.Accounts.Create.Models;
@@ -39,12 +40,14 @@ internal sealed class CreateAccountService : ICreateAccountService
         {
             var userSite = _siteRepository.GetCurrentSite();
 
+            // Money is stored to two decimals, so an amount arriving with more precision is rounded rather than
+            // refused.
             var accountToCreate = new AccountEntity
             {
                 Site = userSite,
                 Description = input.Description,
-                Balance = input.Balance,
-                Reserved = input.Reserved
+                Balance = MonetaryRounding.Round(input.Balance),
+                Reserved = MonetaryRounding.Round(input.Reserved)
             };
 
             // Provided when importing - required so income and expense items can be linked correctly

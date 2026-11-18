@@ -134,6 +134,34 @@ public class CreateIncomeServiceFixture : PotFixtureBase
             capturedIncome.RowId.ShouldBe(providedRowId);
         }
 
+        [Fact]
+        public async Task Should_Store_A_Three_Decimal_Amount_As_Two_Decimals()
+        {
+            var account = CreateAccount();
+
+            _accountRepositoryFake
+                .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(account);
+            _preCreateCheckerFake
+                .CanSaveAsync(Arg.Any<IncomeEntity>(), Arg.Any<CancellationToken>())
+                .Returns((ApiDetailError?)null);
+            _accountRepositoryFake
+                .UpdateAndSaveAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>())
+                .Returns(1);
+
+            var service = CreateService();
+
+            // A double holding 10.005 holds a little less than that, so it only becomes 10.01 when the rounding reads
+            // the decimal the value represents rather than its binary approximation.
+            var input = CreateInput(account.RowId, amount: 10.005d);
+
+            var result = await service.CreateIncomeAsync(input, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeTrue();
+
+            account.Incomes.ShouldHaveSingleItem().Amount.ShouldBe(10.01d);
+        }
+
         private CreateIncomeService CreateService()
         {
             return new CreateIncomeService(_accountRepositoryFake, _preCreateCheckerFake,
@@ -146,7 +174,7 @@ public class CreateIncomeServiceFixture : PotFixtureBase
         return EntityFactory.CreateAccount(EntityFactory.CreateSite(), "Income Account", 1000.0d);
     }
 
-    private static Input CreateInput(Guid accountRowId, Guid? rowId = null)
+    private static Input CreateInput(Guid accountRowId, Guid? rowId = null, double amount = 2500.0d)
     {
         return new Input
         {
@@ -158,7 +186,7 @@ public class CreateIncomeServiceFixture : PotFixtureBase
             EndDate = new DateOnly(2027, 5, 1),
             Frequency = Frequency.Months,
             FrequencyCount = 1,
-            Amount = 2500.0d,
+            Amount = amount,
             Note = "Monthly pay"
         };
     }

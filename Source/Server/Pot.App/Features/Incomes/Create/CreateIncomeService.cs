@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Errors;
 using Pot.App.Features.Incomes.Create.EntityChecks;
 using Pot.App.Features.Incomes.Create.Mappings;
@@ -50,7 +51,10 @@ internal sealed class CreateIncomeService : ICreateIncomeService
             EndDate = input.EndDate,
             Frequency = input.Frequency,
             FrequencyCount = input.FrequencyCount,
-            Amount = input.Amount,
+
+            // Money is stored to two decimals, so an amount arriving with more precision is rounded rather than
+            // refused.
+            Amount = MonetaryRounding.Round(input.Amount),
             Note = input.Note,
             Account = incomeAccount
         };

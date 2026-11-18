@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Accounts.Update.EntityChecks;
@@ -70,8 +71,9 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
     private static void UpdateAccountEntity(AccountEntity accountToUpdate, Input request)
     {
+        // Money is stored to two decimals, so an amount arriving with more precision is rounded rather than refused.
         accountToUpdate.Description = request.Description;
-        accountToUpdate.Balance = request.Balance;
-        accountToUpdate.Reserved = request.Reserved;
+        accountToUpdate.Balance = MonetaryRounding.Round(request.Balance);
+        accountToUpdate.Reserved = MonetaryRounding.Round(request.Reserved);
     }
 }

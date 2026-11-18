@@ -37,7 +37,7 @@ internal sealed class Response : ResponseBase
     public int LinkedIncomes { get; init; }
 
     [Description("The available balance after considering the Reserved and committed amounts")]
-    public double Available => Balance - Reserved - TotalCommitted;
+    public double Available { get; init; }
 
     public static Ok<Response[]> Ok(IReadOnlyList<Output> accounts)
     {
@@ -61,5 +61,9 @@ internal sealed class Response : ResponseBase
         StableExpenseAccrual = account.StableExpenseAccrual;
         LinkedExpenses = account.LinkedExpenses;
         LinkedIncomes = account.LinkedIncomes;
+
+        // Published as the calculation produced it rather than recomputed here, so the figure a reader sees is the
+        // rounded one and no second rule can disagree with it.
+        Available = account.Available;
     }
 }

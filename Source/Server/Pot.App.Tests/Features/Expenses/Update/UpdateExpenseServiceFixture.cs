@@ -360,6 +360,45 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
 
             await _expenseRepositoryFake.Received(1).SaveAsync(Arg.Any<CancellationToken>());
         }
+
+        [Fact]
+        public async Task Should_Store_A_Three_Decimal_Amount_As_Two_Decimals()
+        {
+            var logger = Substitute.For<ILogger<UpdateExpenseService>>();
+
+            var sourceAccount = CreateAccount(accountId: 45);
+            var existingExpense = CreateExpense(accountId: sourceAccount.Id, account: sourceAccount);
+
+            _expenseRepositoryFake
+                .GetExpenseOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(existingExpense);
+
+            _accountRepositoryFake
+                .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(sourceAccount);
+
+            _preUpdateCheckerFake
+                .CanSaveAsync(Arg.Any<Input>(), Arg.Any<AccountEntity>(), Arg.Any<ExpenseEntity>(), Arg.Any<CancellationToken>())
+                .Returns((ApiDetailError?)null);
+
+            _timeProviderFake.GetLocalDateNow().Returns(new DateOnly(2026, 4, 24));
+
+            _expenseRepositoryFake
+                .SaveAsync(Arg.Any<CancellationToken>())
+                .Returns(1);
+
+            var service = new UpdateExpenseService(_expenseRepositoryFake, _accountRepositoryFake, _preUpdateCheckerFake, _timeProviderFake, logger);
+
+            // A double holding 10.005 holds a little less than that, so it only becomes 10.01 when the rounding reads
+            // the decimal the value represents rather than its binary approximation.
+            var input = CreateInput(existingExpense.RowId, sourceAccount.RowId, amount: 10.005d);
+
+            var result = await service.UpdateExpenseAsync(input, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+
+            existingExpense.Amount.ShouldBe(10.01d);
+        }
     }
 
     private static AccountEntity CreateAccount(int accountId)
@@ -400,7 +439,7 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
         };
     }
 
-    private static Input CreateInput(Guid expenseRowId, Guid accountRowId)
+    private static Input CreateInput(Guid expenseRowId, Guid accountRowId, double amount = 120.0d)
     {
         return new Input
         {
@@ -415,7 +454,7 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
             AccrualPolicy = AccrualPolicy.Automatic,
             Frequency = Frequency.Months,
             FrequencyCount = 2,
-            Amount = 120.0d,
+            Amount = amount,
             Note = "Updated note"
         };
     }

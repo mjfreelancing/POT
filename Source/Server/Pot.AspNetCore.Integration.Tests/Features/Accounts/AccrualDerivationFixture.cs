@@ -107,6 +107,34 @@ public class AccrualDerivationFixture : IntegrationAuthFixtureBase
         afterEdit.Available.ShouldBe(AccountBalance - AccountReserved - afterEdit.TotalCommitted);
     }
 
+    // The components subtract to a fraction of a cent in binary, so the published available balance has to be the
+    // rounded figure rather than a recomputation done from the response's own properties.
+    [Fact]
+    public async Task Should_Publish_A_Rounded_Available_Balance()
+    {
+        var admin = await CreateAdminUserAsync("accounts", "Accounts User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var today = GetSiteLocalDateToday();
+        var accountRowId = await client.CreateAccountAsync(CreateAccountDescription(), 0.3d, 0.1d);
+
+        // A one-time bill due today accrues its whole amount, so the commitment is exactly 0.10.
+        var expenseRequest = ExpenseRequestFactory.CreateBill(accountRowId, today, Frequency.OneTime, 0, 0.1d,
+            AccrualPolicy.Automatic, accrualStart: today);
+
+        await client.CreateExpenseAsync(expenseRequest);
+
+        // 0.3 - 0.1 - 0.1 is 0.09999999999999998 in binary arithmetic, while the figure a reader sees is 0.10.
+        var listed = (await client.GetAccountsAsync()).ShouldHaveSingleItem();
+
+        listed.Available.ShouldBe(0.1d);
+
+        var fetched = await client.GetAccountAsync(accountRowId);
+
+        fetched.Available.ShouldBe(0.1d);
+    }
+
     private static void AssertPastDueAccount(AccountResponse account)
     {
         account.TotalExpenseAccrued.ShouldBe(0.0d);

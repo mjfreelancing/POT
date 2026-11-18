@@ -147,6 +147,38 @@ public class UpdateIncomeServiceFixture : PotFixtureBase
             await _incomeRepositoryFake.Received(1).SaveAsync(Arg.Any<CancellationToken>());
         }
 
+        [Fact]
+        public async Task Should_Store_A_Three_Decimal_Amount_As_Two_Decimals()
+        {
+            var account = CreateAccount();
+            var existingIncome = CreateIncome(account);
+
+            _incomeRepositoryFake
+                .GetIncomeOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(existingIncome);
+            _accountRepositoryFake
+                .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(account);
+            _preUpdateCheckerFake
+                .CanSaveAsync(Arg.Any<Input>(), Arg.Any<AccountEntity>(), Arg.Any<IncomeEntity>(), Arg.Any<CancellationToken>())
+                .Returns((ApiDetailError?)null);
+            _incomeRepositoryFake
+                .SaveAsync(Arg.Any<CancellationToken>())
+                .Returns(1);
+
+            var service = CreateService();
+
+            // A double holding 10.005 holds a little less than that, so it only becomes 10.01 when the rounding reads
+            // the decimal the value represents rather than its binary approximation.
+            var input = CreateInput(existingIncome.RowId, account.RowId, amount: 10.005d);
+
+            var result = await service.UpdateIncomeAsync(input, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeTrue();
+
+            existingIncome.Amount.ShouldBe(10.01d);
+        }
+
         private UpdateIncomeService CreateService()
         {
             return new UpdateIncomeService(_incomeRepositoryFake, _accountRepositoryFake, _preUpdateCheckerFake,
@@ -164,7 +196,7 @@ public class UpdateIncomeServiceFixture : PotFixtureBase
         return EntityFactory.CreateIncome(account, false, "Original salary", 2000.0d, "2026-04-01", null, Frequency.Months, 1);
     }
 
-    private static Input CreateInput(Guid incomeRowId, Guid accountRowId)
+    private static Input CreateInput(Guid incomeRowId, Guid accountRowId, double amount = 3000.0d)
     {
         return new Input
         {
@@ -177,7 +209,7 @@ public class UpdateIncomeServiceFixture : PotFixtureBase
             EndDate = new DateOnly(2027, 5, 1),
             Frequency = Frequency.Weeks,
             FrequencyCount = 2,
-            Amount = 3000.0d,
+            Amount = amount,
             Note = "Updated pay"
         };
     }

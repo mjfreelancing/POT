@@ -254,6 +254,38 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             capturedExpense.ShouldNotBeNull();
             capturedExpense.RowId.ShouldBe(providedRowId);
         }
+
+        [Fact]
+        public async Task Should_Store_A_Three_Decimal_Amount_As_Two_Decimals()
+        {
+            var logger = Substitute.For<ILogger<CreateExpenseService>>();
+
+            var account = CreateAccount(accountId: 23);
+
+            _accountRepositoryFake
+                .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(account);
+
+            _preCreateCheckerFake
+                .CanSaveAsync(Arg.Any<ExpenseEntity>(), Arg.Any<CancellationToken>())
+                .Returns((ApiDetailError?)null);
+
+            _accountRepositoryFake
+                .UpdateAndSaveAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>())
+                .Returns(1);
+
+            var service = new CreateExpenseService(_accountRepositoryFake, _preCreateCheckerFake, _timeProviderFake, logger);
+
+            // A double holding 10.005 holds a little less than that, so it only becomes 10.01 when the rounding reads
+            // the decimal the value represents rather than its binary approximation.
+            var input = CreateInput(account.RowId, amount: 10.005d);
+
+            var result = await service.CreateExpenseAsync(input, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+
+            account.Expenses.ShouldHaveSingleItem().Amount.ShouldBe(10.01d);
+        }
     }
 
     private static AccountEntity CreateAccount(int accountId)
@@ -273,7 +305,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
         };
     }
 
-    private static Input CreateInput(Guid accountRowId)
+    private static Input CreateInput(Guid accountRowId, double amount = 89.95d)
     {
         return new Input
         {
@@ -286,7 +318,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             AccrualPolicy = AccrualPolicy.Automatic,
             Frequency = Frequency.Months,
             FrequencyCount = 1,
-            Amount = 89.95d,
+            Amount = amount,
             Note = "Monthly invoice"
         };
     }

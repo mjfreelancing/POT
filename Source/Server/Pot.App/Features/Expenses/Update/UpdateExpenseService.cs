@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Extensions;
@@ -101,7 +102,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
         expenseToUpdate.AccrualPolicy = input.AccrualPolicy;
         expenseToUpdate.Frequency = input.Frequency;
         expenseToUpdate.FrequencyCount = input.FrequencyCount;
-        expenseToUpdate.Amount = input.Amount;
+        expenseToUpdate.Amount = MonetaryRounding.Round(input.Amount);
         expenseToUpdate.Note = input.Note;
         expenseToUpdate.Account = expenseAccount;
     }

@@ -1,3 +1,5 @@
+using Pot.App.Calculators;
+
 namespace Pot.App.Features.Accounts.GetAll.Models;
 
 public sealed class Output
@@ -13,6 +15,6 @@ public sealed class Output
     public required double StableExpenseAccrual { get; init; }
     public required int LinkedExpenses { get; init; }
     public required int LinkedIncomes { get; init; }
-    public double Available => Balance - Reserved - TotalCommitted;
+    public double Available => MonetaryRounding.Round(Balance - Reserved - TotalCommitted);
 
 }
