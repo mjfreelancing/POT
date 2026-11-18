@@ -150,9 +150,13 @@ internal sealed class AccountProjectionState
     /// </summary>
     /// <param name="incomeReceived">The income assumed received on the day.</param>
     /// <param name="expensesPaid">The expenses assumed paid on the day.</param>
+    /// <remarks>
+    /// The balance carried to the next day is the rounded figure the day published, so a later day is measured from
+    /// the balance a reader was shown rather than from the full-precision remainder behind it.
+    /// </remarks>
     public void RecordCashMovement(double incomeReceived, double expensesPaid)
     {
-        RunningBalance += incomeReceived - expensesPaid;
+        RunningBalance = MonetaryRounding.Round(RunningBalance + incomeReceived - expensesPaid);
     }
 
     /// <summary>

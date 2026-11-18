@@ -78,6 +78,11 @@ Chosen option: 1. The rules it imposes:
   is a property of the current product rather than of the type.
 - Bad, because JavaScript has no decimal type, so the client rounds its own totals rather than computing
   them exactly.
+- Bad, because a total is the sum of its rounded parts, so it can differ by a cent from the rounded sum of
+  those parts. A stable rate built from two contributions of `3.2855` and one of `10.00` publishes `16.58`,
+  because each contribution is rounded to `3.29` before it is added; rounding the unrounded total of
+  `16.5710` would have published `16.57`. The total reconciles with the figures beside it, which is the
+  property a reader checks, but it is not the result of the arithmetic that produced it.
 - Bad, because a value that is not finite has no two-decimal form and cannot be rounded. Converting it to
   a decimal throws, so a non-finite result passes through unrounded: the rounding step must not be the
   thing that fails on malformed input. The product can still publish such a value, which is a defect of

@@ -123,8 +123,8 @@ internal sealed class ProjectionsService : IProjectionsService
             state.HoldArrears(accrual.TotalArrears);
         }
 
-        var expensesPaid = expensesDue.Sum(row => row.Facts.Amount);
-        var incomeReceived = incomesDue.Sum(row => row.Income.Amount);
+        var expensesPaid = MonetaryRounding.Round(expensesDue.Sum(row => row.Facts.Amount));
+        var incomeReceived = MonetaryRounding.Round(incomesDue.Sum(row => row.Income.Amount));
 
         var dateValues = new DateProjectionValues
         {
@@ -180,9 +180,12 @@ internal sealed class ProjectionsService : IProjectionsService
 
         var paidRowIds = expensesDue.Select(row => row.Facts.RowId).ToHashSet();
 
-        return accrual.Expenses
+        // A total of per-row accruals, rounded as a total.
+        var settled = accrual.Expenses
             .Where(detail => paidRowIds.Contains(detail.RowId))
             .Sum(detail => detail.Accrued);
+
+        return MonetaryRounding.Round(settled);
     }
 
     private (DateOnly localDate, int preStartDays) GetPreStartDays(DateOnly startDate)
@@ -208,7 +211,9 @@ internal sealed class ProjectionsService : IProjectionsService
     {
         return projectionValues.SelectToArray(item =>
         {
-            var balance = item.StartingBalance + item.IncomeReceived - item.ExpensesPaid;
+            // Every figure the day publishes is rounded, and the balance is derived from the components the day
+            // already publishes so a consumer subtracting them arrives at the published balance.
+            var balance = MonetaryRounding.Round(item.StartingBalance + item.IncomeReceived - item.ExpensesPaid);
 
             return new DateProjection
             {
@@ -223,7 +228,7 @@ internal sealed class ProjectionsService : IProjectionsService
                 // netting it from the balance never deducts the same bill twice. A row that accrues nothing
                 // (AccrualPolicy.None, or no accrual start) settles nothing. Arrears is a standing obligation for
                 // past-due cycles, so it is published separately and never released.
-                UnpaidAccrual = item.Accrued - item.AccrualSettledByPayments,
+                UnpaidAccrual = MonetaryRounding.Round(item.Accrued - item.AccrualSettledByPayments),
 
                 DailyAccrual = item.DailyAccrual,
                 IncomeReceived = item.IncomeReceived,

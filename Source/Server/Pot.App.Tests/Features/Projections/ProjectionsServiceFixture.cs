@@ -2944,6 +2944,226 @@ public class ProjectionsServiceFixture : PotFixtureBase
             }
         }
 
+        public class RoundedValues : GetFinancialProjectionsAsync
+        {
+            [Fact]
+            public async Task Should_Sum_A_Day_Of_Expenses_Into_A_Two_Decimal_Total()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                // Two rows falling due on the same day, whose amounts do not add exactly in binary.
+                var first = EntityFactory.CreateExpense(account, false, "First", 0.1d, "2025-01-01", "2025-01-15", null,
+                    Frequency.OneTime, 1);
+
+                var second = EntityFactory.CreateExpense(account, false, "Second", 0.2d, "2025-01-01", "2025-01-15", null,
+                    Frequency.OneTime, 1);
+
+                account.Expenses.Add(first);
+                account.Expenses.Add(second);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 3
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var today = result.Value!.Accounts.ShouldHaveSingleItem().Dates[0];
+
+                ShouldBeTwoDecimals(today.ExpensesPaid, "the day's payments");
+
+                today.ExpensesPaid.ShouldBe(0.3d);
+                today.Balance.ShouldBe(999.7d);
+            }
+
+            [Fact]
+            public async Task Should_Sum_A_Day_Of_Income_Into_A_Two_Decimal_Total()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                var first = EntityFactory.CreateIncome(account, false, "First", 0.1d, "2025-01-15", null, Frequency.OneTime, 1);
+                var second = EntityFactory.CreateIncome(account, false, "Second", 0.2d, "2025-01-15", null, Frequency.OneTime, 1);
+
+                account.Incomes.Add(first);
+                account.Incomes.Add(second);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 3
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var today = result.Value!.Accounts.ShouldHaveSingleItem().Dates[0];
+
+                ShouldBeTwoDecimals(today.IncomeReceived, "the day's income");
+
+                today.IncomeReceived.ShouldBe(0.3d);
+                today.Balance.ShouldBe(1000.3d);
+            }
+
+            [Fact]
+            public async Task Should_Carry_The_Rounded_Balance_Into_The_Next_Day()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                // One payment of 0.10 every day, so the balance is reduced by a value binary cannot hold exactly.
+                var expense = EntityFactory.CreateExpense(account, false, "Daily", 0.1d, "2025-01-01", "2025-01-15", null,
+                    Frequency.Days, 1);
+
+                account.Expenses.Add(expense);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 11
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var dates = result.Value!.Accounts.ShouldHaveSingleItem().Dates;
+
+                // Ten payments of 0.10, so the balance is 999 after the tenth day, not a fraction off it.
+                dates[9].ExpensesPaid.ShouldBe(0.1d);
+                dates[9].Balance.ShouldBe(999.0d);
+
+                foreach (var projection in dates)
+                {
+                    ShouldBeTwoDecimals(projection.Balance, $"the balance on {projection.Date:yyyy-MM-dd}");
+                }
+            }
+
+            [Fact]
+            public async Task Should_Publish_Two_Decimal_Values_On_Every_Day()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+                var another = EntityFactory.CreateAccount(context.Site, "Savings", 2500.0d);
+
+                // A monthly cycle of 100 over 31 days accrues 100/31 = 3.2258064 a day, so every figure derived from
+                // it carries a fraction until it is rounded.
+                var monthly = EntityFactory.CreateExpense(account, false, "Rent", 100.0d, "2025-01-01", "2025-01-31", null,
+                    Frequency.Months, 1);
+
+                var weekly = EntityFactory.CreateExpense(another, false, "Gym", 33.33d, "2025-01-10", "2025-01-22", null,
+                    Frequency.Weeks, 1);
+
+                account.Expenses.Add(monthly);
+                another.Expenses.Add(weekly);
+
+                await context.AddAccountsAsync(account, another);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 45
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var allProjections = result.Value!.Accounts.SelectMany(accountProjection => accountProjection.Dates);
+
+                foreach (var projection in allProjections)
+                {
+                    var because = $"on {projection.Date:yyyy-MM-dd}";
+
+                    ShouldBeTwoDecimals(projection.Balance, $"the balance {because}");
+                    ShouldBeTwoDecimals(projection.Arrears, $"the arrears {because}");
+                    ShouldBeTwoDecimals(projection.UnpaidAccrual, $"the unpaid accrual {because}");
+                    ShouldBeTwoDecimals(projection.DailyAccrual, $"the daily accrual {because}");
+                    ShouldBeTwoDecimals(projection.IncomeReceived, $"the income received {because}");
+                    ShouldBeTwoDecimals(projection.ExpensesPaid, $"the expenses paid {because}");
+                }
+            }
+
+            [Fact]
+            public async Task Should_Present_The_Same_Figures_In_A_Shorter_And_A_Longer_Forecast()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d, reserved: 100.0d);
+
+                var daily = EntityFactory.CreateExpense(account, false, "Daily", 0.1d, "2025-01-01", "2025-01-15", null,
+                    Frequency.Days, 1);
+
+                var monthly = EntityFactory.CreateExpense(account, false, "Monthly", 333.33d, "2025-01-01", "2025-01-20", null,
+                    Frequency.Months, 1);
+
+                var income = EntityFactory.CreateIncome(account, false, "Income", 1000.0d, "2025-01-18", null,
+                    Frequency.Weeks, 2);
+
+                account.Expenses.Add(daily);
+                account.Expenses.Add(monthly);
+                account.Incomes.Add(income);
+
+                await context.AddAccountAsync(account);
+
+                var shortOptions = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var longOptions = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 90
+                };
+
+                var shortResult = await context.GetFinancialProjectionsAsync(shortOptions, CancellationToken.None);
+                var longResult = await context.GetFinancialProjectionsAsync(longOptions, CancellationToken.None);
+
+                shortResult.IsSuccess.ShouldBeTrue();
+                longResult.IsSuccess.ShouldBeTrue();
+
+                var shortDates = shortResult.Value!.Accounts.ShouldHaveSingleItem().Dates;
+                var longDates = longResult.Value!.Accounts.ShouldHaveSingleItem().Dates;
+
+                shortDates.Count.ShouldBe(30);
+                longDates.Count.ShouldBe(90);
+
+                for (var day = 0; day < shortDates.Count; day++)
+                {
+                    var shortDay = shortDates[day];
+                    var longDay = longDates[day];
+
+                    var because = $"day {day} ({shortDay.Date:yyyy-MM-dd})";
+
+                    longDay.Date.ShouldBe(shortDay.Date);
+                    longDay.Balance.ShouldBe(shortDay.Balance, because);
+                    longDay.Reserved.ShouldBe(shortDay.Reserved, because);
+                    longDay.Arrears.ShouldBe(shortDay.Arrears, because);
+                    longDay.UnpaidAccrual.ShouldBe(shortDay.UnpaidAccrual, because);
+                    longDay.DailyAccrual.ShouldBe(shortDay.DailyAccrual, because);
+                    longDay.IncomeReceived.ShouldBe(shortDay.IncomeReceived, because);
+                    longDay.ExpensesPaid.ShouldBe(shortDay.ExpensesPaid, because);
+                }
+            }
+        }
+
         public class MultiAccountProjections : GetFinancialProjectionsAsync
         {
             [Fact]
@@ -3022,6 +3242,13 @@ public class ProjectionsServiceFixture : PotFixtureBase
     private static double Available(DateProjection projection)
     {
         return projection.Balance - projection.Reserved - projection.UnpaidAccrual - projection.Arrears;
+    }
+
+    // A figure that is already two decimals survives rounding unchanged, which is what distinguishes it from the
+    // full-precision result it was computed from.
+    private static void ShouldBeTwoDecimals(double value, string because)
+    {
+        value.ShouldBe(Math.Round(value, 2, MidpointRounding.AwayFromZero), because);
     }
 
     // Helper method to create isolated test context with in-memory database
