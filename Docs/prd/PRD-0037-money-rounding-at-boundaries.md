@@ -1,8 +1,8 @@
 # Money Rounding at Boundaries PRD
 
-**Status:** Planning
+**Status:** Planned
 **Priority:** Medium
-**Last Updated:** 2026-11-17
+**Last Updated:** 2026-11-18
 **Feature ID:** 0037
 **Discovery:** complete
 **Scope:** Round every monetary value the product publishes to two decimal places, so a figure a person
