@@ -1,4 +1,4 @@
-using Pot.App.Calculators;
+using Pot.App.Concerns.Money;
 
 namespace Pot.App.Features.Accounts.GetAll.Models;
 

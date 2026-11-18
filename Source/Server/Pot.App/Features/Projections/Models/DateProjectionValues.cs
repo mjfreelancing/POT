@@ -1,3 +1,5 @@
+using Pot.App.Concerns.Money;
+
 namespace Pot.App.Features.Projections.Models;
 
 /// <summary>
@@ -63,4 +65,24 @@ internal sealed class DateProjectionValues
 
     /// <summary>The incomes due on the day.</summary>
     public required IReadOnlyList<ProjectionIncomeModel> IncomeItems { get; init; }
+
+    /// <summary>
+    /// The balance the day closes on: the balance it started with, plus the income assumed received, less the
+    /// expenses assumed paid.
+    /// </summary>
+    /// <remarks>
+    /// This is the balance the day publishes and the balance the next day starts from, so a later day is measured
+    /// from the figure a reader was shown rather than a recomputation of it.
+    /// </remarks>
+    public double Balance => MonetaryRounding.Round(StartingBalance + IncomeReceived - ExpensesPaid);
+
+    /// <summary>
+    /// The part of <see cref="Accrued" /> that the day's payments do not settle.
+    /// </summary>
+    /// <remarks>
+    /// Expenses due on the day are published as paid, so the balance already has them deducted. Only the accrual the
+    /// day's payments do not cover is published here, so a consumer netting it from the balance never deducts the
+    /// same bill twice.
+    /// </remarks>
+    public double UnpaidAccrual => MonetaryRounding.Round(Accrued - AccrualSettledByPayments);
 }

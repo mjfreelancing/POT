@@ -56,7 +56,8 @@ the one division already rounds.
 
 Chosen option: 1. The rules it imposes:
 
-- Every monetary value published is rounded to two decimals away from zero at the boundary.
+- Every monetary value the application produces is rounded to two decimals away from zero at the boundary
+  that produces it. A value copied from storage is published as stored, because a write normalised it.
 - The rounding applies to the decimal the value represents, not to its binary approximation. A `double`
   holding `1.005` actually holds `1.0049999999999999`, which is below the midpoint, so no midpoint mode
   returns `1.01`; the value is converted to a decimal representation for the rounding step.

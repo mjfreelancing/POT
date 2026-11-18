@@ -1,4 +1,5 @@
 using AllOverIt.Assertion;
+using Pot.App.Concerns.Money;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 using Pot.Shared.Models;

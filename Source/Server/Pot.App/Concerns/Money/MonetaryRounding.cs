@@ -1,4 +1,4 @@
-namespace Pot.App.Calculators;
+namespace Pot.App.Concerns.Money;
 
 /// <summary>
 /// Rounds monetary values to the two decimal places the product publishes.

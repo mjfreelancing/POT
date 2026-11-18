@@ -1,4 +1,4 @@
-using Pot.App.Calculators;
+using Pot.App.Concerns.Money;
 using Pot.TestUtils;
 using Shouldly;
 

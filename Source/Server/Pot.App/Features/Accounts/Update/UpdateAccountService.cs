@@ -2,7 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
-using Pot.App.Calculators;
+using Pot.App.Concerns.Money;
 using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Accounts.Update.EntityChecks;

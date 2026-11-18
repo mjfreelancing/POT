@@ -4,6 +4,7 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Calculators;
+using Pot.App.Concerns.Money;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Projections.Models;
 using Pot.Data.Repositories.Projections;
@@ -153,7 +154,7 @@ internal sealed class ProjectionsService : IProjectionsService
 
         // The window assumes income is received and expenses are paid on time, so the balance is loop-local and
         // the account row is never written.
-        state.RecordCashMovement(incomeReceived, expensesPaid);
+        state.CarryBalanceForward(dateValues);
 
         // Folding after the measurement is what lets a payment day mid-window behave exactly as today does.
         state.FoldRenewals(_expenseRenewalFold, _incomeRenewalFold, date);
@@ -211,14 +212,10 @@ internal sealed class ProjectionsService : IProjectionsService
     {
         return projectionValues.SelectToArray(item =>
         {
-            // Every figure the day publishes is rounded, and the balance is derived from the components the day
-            // already publishes so a consumer subtracting them arrives at the published balance.
-            var balance = MonetaryRounding.Round(item.StartingBalance + item.IncomeReceived - item.ExpensesPaid);
-
             return new DateProjection
             {
                 Date = item.Date,
-                Balance = balance,
+                Balance = item.Balance,
                 Reserved = item.Reserved,
                 Arrears = item.Arrears,
 
@@ -228,7 +225,7 @@ internal sealed class ProjectionsService : IProjectionsService
                 // netting it from the balance never deducts the same bill twice. A row that accrues nothing
                 // (AccrualPolicy.None, or no accrual start) settles nothing. Arrears is a standing obligation for
                 // past-due cycles, so it is published separately and never released.
-                UnpaidAccrual = MonetaryRounding.Round(item.Accrued - item.AccrualSettledByPayments),
+                UnpaidAccrual = item.UnpaidAccrual,
 
                 DailyAccrual = item.DailyAccrual,
                 IncomeReceived = item.IncomeReceived,

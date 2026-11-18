@@ -1,5 +1,6 @@
 using Pot.App.Calculators;
 using Pot.App.Features.Projections;
+using Pot.App.Features.Projections.Models;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Models;
@@ -42,7 +43,7 @@ public class AccountProjectionStateFixture : PotFixtureBase
     }
 
     [Fact]
-    public void Should_Start_The_Running_Balance_From_The_Account_And_Keep_It_Local()
+    public void Should_Start_The_Running_Balance_From_The_Account_And_Carry_The_Published_Balance()
     {
         var account = CreateAccount();
 
@@ -50,7 +51,22 @@ public class AccountProjectionStateFixture : PotFixtureBase
 
         state.RunningBalance.ShouldBe(1000.0d);
 
-        state.RecordCashMovement(incomeReceived: 200.0d, expensesPaid: 70.0d);
+        var dateValues = new DateProjectionValues
+        {
+            Date = FoldDate,
+            StartingBalance = state.RunningBalance,
+            IncomeReceived = 200.0d,
+            ExpensesPaid = 70.0d,
+            AccrualSettledByPayments = 0.0d,
+            DailyAccrual = 0.0d,
+            Accrued = 0.0d,
+            Arrears = 0.0d,
+            Reserved = 0.0d,
+            ExpenseItems = [],
+            IncomeItems = []
+        };
+
+        state.CarryBalanceForward(dateValues);
 
         state.RunningBalance.ShouldBe(1130.0d);
         account.Balance.ShouldBe(1000.0d, "the projection never writes the account");

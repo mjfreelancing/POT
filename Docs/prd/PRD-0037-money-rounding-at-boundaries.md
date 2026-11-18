@@ -63,8 +63,9 @@ changing the stored type or the contract.
 
 ### B. What the server rounds
 
-- **B1.** Every monetary value published by the API is rounded, including values that are only passed
-  through from storage.
+- **B1.** Every monetary value the application computes and publishes is rounded. A value passed through
+  from storage is published as stored: a write has already normalised it (D1), so there is no second rule
+  to apply on read.
 - **B2.** Rounding happens inside the calculators, so every caller receives rounded values and the rule
   can be tested in one place.
 - **B3.** The available balance is derived from the rounded components (`Balance`, `Reserved`,
@@ -145,9 +146,9 @@ on that, not on the tests that happen to exist today.
 - **Client aggregates over many rows.** Rounding a total removes the negative-zero artefact but cannot
   make a JavaScript sum exact. With many accounts, a total can still differ from the arithmetically exact
   sum in the last cent.
-- **Existing data is assumed to be two decimals.** Nothing has ever validated that. If a stored amount
-  carried more decimals, the first publication after this change would round it, and the export would
-  publish the rounded value.
+- **Existing data is assumed to be two decimals.** Nothing has ever validated that. A stored amount that
+  carried more decimals is published and exported as stored until the row is next written, which is the
+  write that normalises it.
 
 ## Assumptions
 
@@ -207,7 +208,13 @@ unnamed at close-out means a behaviour is unproven, and the manual plan returns.
 ## Amendments
 
 Append-only, oldest first. The text above is this document as approved; read it through these entries.
-None.
+
+- **AM-1 (2026-11-18, Clarified) — what is rounded on read (B1).** B1 asked for every published value to be
+  rounded, including values passed through from storage. Delivery showed those values are copied from the
+  entity unchanged in the accounts and projection mappings, so rounding them would add a second rule at
+  every read for data a write already normalises. B1 now covers the values the application computes, and
+  states that a stored value is published as stored because the write path normalises it (D1). The risk of
+  pre-existing data carrying more decimals is recorded against that reading.
 
 ## Verification Evidence
 

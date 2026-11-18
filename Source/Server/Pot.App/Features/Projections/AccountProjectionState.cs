@@ -1,5 +1,6 @@
 using AllOverIt.Extensions;
 using Pot.App.Calculators;
+using Pot.App.Features.Projections.Models;
 using Pot.App.Mappings;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
@@ -146,17 +147,16 @@ internal sealed class AccountProjectionState
     }
 
     /// <summary>
-    /// Applies the day's assumed cash movement to the loop-local running balance.
+    /// Carries the day's published closing balance forward as the balance the next day starts from.
     /// </summary>
-    /// <param name="incomeReceived">The income assumed received on the day.</param>
-    /// <param name="expensesPaid">The expenses assumed paid on the day.</param>
+    /// <param name="dateValues">The values resolved for the day.</param>
     /// <remarks>
-    /// The balance carried to the next day is the rounded figure the day published, so a later day is measured from
-    /// the balance a reader was shown rather than from the full-precision remainder behind it.
+    /// The balance carried to the next day is the figure the day published, so a later day is measured from the
+    /// balance a reader was shown rather than from the full-precision remainder behind it.
     /// </remarks>
-    public void RecordCashMovement(double incomeReceived, double expensesPaid)
+    public void CarryBalanceForward(DateProjectionValues dateValues)
     {
-        RunningBalance = MonetaryRounding.Round(RunningBalance + incomeReceived - expensesPaid);
+        RunningBalance = dateValues.Balance;
     }
 
     /// <summary>
