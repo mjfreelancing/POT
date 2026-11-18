@@ -118,11 +118,15 @@ internal sealed class AccrualCalculator : IAccrualCalculator
 
         var schedule = WalkSchedule(facts, cursor, asOfDate);
 
+        // Arrears is a sum of whole occurrences, so it is rounded once here rather than left as the binary sum of the
+        // amounts that produced it; the account total is then the sum of these rounded rows.
+        var arrears = MonetaryRounding.Round(schedule.Arrears);
+
         // Whether the row accrues at all is decided on the start-of-day cursor, exactly as the persisted rule did:
         // a null accrual start is not a start of zero, and a row whose accrual has not begun contributes nothing.
         if (!ShouldAccrue(facts, cursor, asOfDate))
         {
-            return new ExpenseAccrualResult(0.0d, schedule.Arrears, 0.0d, 0.0d);
+            return new ExpenseAccrualResult(0.0d, arrears, 0.0d, 0.0d);
         }
 
         // The stable metric is an average rate rather than an obligation, so it is measured on the start-of-day
@@ -133,13 +137,13 @@ internal sealed class AccrualCalculator : IAccrualCalculator
         if (!schedule.HasCycleInProgress)
         {
             // The schedule has nothing left to accrue towards, so the obligation sits entirely in arrears.
-            return new ExpenseAccrualResult(0.0d, schedule.Arrears, 0.0d, stableAccrual);
+            return new ExpenseAccrualResult(0.0d, arrears, 0.0d, stableAccrual);
         }
 
         var accrued = CalculateAccrued(facts, schedule.NextDue, schedule.AccrualStart, asOfDate);
         var dailyAccrual = CalculateDailyAccrual(facts, schedule.NextDue, accrued, asOfDate);
 
-        return new ExpenseAccrualResult(accrued, schedule.Arrears, dailyAccrual, stableAccrual);
+        return new ExpenseAccrualResult(accrued, arrears, dailyAccrual, stableAccrual);
     }
 
     // Whether the expense accrues at all, decided on the start-of-day cursor.

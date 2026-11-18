@@ -280,7 +280,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             // the decimal the value represents rather than its binary approximation.
             var input = CreateInput(account.RowId, amount: 10.005d);
 
-            var result = await service.CreateExpenseAsync(input, CancellationToken.None);
+            var result = await service.CreateExpenseAsync(input, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
 

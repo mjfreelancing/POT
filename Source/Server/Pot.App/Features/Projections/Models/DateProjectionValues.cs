@@ -21,13 +21,13 @@ internal sealed class DateProjectionValues
     /// The balance is loop-local: the window assumes income is received and expenses are paid on time, so the
     /// forecast simulates movement forward.
     /// </remarks>
-    public required double StartingBalance { get; set; }
+    public required double StartingBalance { get; init; }
 
     /// <summary>The total income assumed received on the day.</summary>
-    public required double IncomeReceived { get; set; }
+    public required double IncomeReceived { get; init; }
 
     /// <summary>The total expenses assumed paid on the day.</summary>
-    public required double ExpensesPaid { get; set; }
+    public required double ExpensesPaid { get; init; }
 
     /// <summary>
     /// The part of <see cref="Accrued" /> that the day's payments settle.
@@ -39,13 +39,13 @@ internal sealed class DateProjectionValues
     /// the response mapping adds it back so a payment day is not charged twice. Only what a row actually
     /// contributed to <see cref="Accrued" /> is settled, so an expense that accrues nothing settles nothing.
     /// </remarks>
-    public required double AccrualSettledByPayments { get; set; }
+    public required double AccrualSettledByPayments { get; init; }
 
     /// <summary>The combined daily accrual rate for the account's cycles in progress.</summary>
-    public required double DailyAccrual { get; set; }
+    public required double DailyAccrual { get; init; }
 
     /// <summary>The total accrual of the account's cycles in progress as at the day.</summary>
-    public required double Accrued { get; set; }
+    public required double Accrued { get; init; }
 
     /// <summary>The total obligation carried for occurrences already past due.</summary>
     /// <remarks>
@@ -53,10 +53,10 @@ internal sealed class DateProjectionValues
     /// pre-existing debt the forecast never assumes is repaid, so it is subtracted from the available balance and
     /// never released.
     /// </remarks>
-    public required double Arrears { get; set; }
+    public required double Arrears { get; init; }
 
     /// <summary>The amount reserved on the account, subtracted from the available balance.</summary>
-    public required double Reserved { get; set; }
+    public required double Reserved { get; init; }
 
     /// <summary>The expenses due on the day.</summary>
     public required IReadOnlyList<ProjectionExpenseModel> ExpenseItems { get; init; }

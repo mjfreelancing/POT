@@ -63,7 +63,7 @@ public class UpdateAccountServiceFixture : PotFixtureBase
                 Reserved = 2.005d
             };
 
-            var result = await service.UpdateAccountAsync(input, CancellationToken.None);
+            var result = await service.UpdateAccountAsync(input, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             existingAccount.Balance.ShouldBe(10.01d);

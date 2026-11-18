@@ -340,6 +340,20 @@ public class AccrualCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Publish_A_Two_Decimal_Arrears_For_Each_Row()
+        {
+            // Three past-due occurrences of 100.10 sum to 300.29999999999995 in binary arithmetic, while the figure a
+            // reader sees is 300.30.
+            var weeklyBill = CreateExpense(amount: 100.10d, nextDue: "2024-12-25", accrualStart: "2024-12-25",
+                frequency: Frequency.Weeks);
+
+            var view = Calculator.CalculateAccountWithExpenseDetail([CreatePosition(weeklyBill)], new DateOnly(2025, 1, 11));
+
+            view.Expenses.ShouldHaveSingleItem().Arrears.ShouldBe(300.30d);
+            view.TotalArrears.ShouldBe(300.30d);
+        }
+
+        [Fact]
         public void Should_Not_Treat_An_Occurrence_Due_Today_As_Arrears()
         {
             var weeklyBill = CreateExpense(amount: 70.0d, nextDue: "2025-01-11", accrualStart: "2025-01-11",

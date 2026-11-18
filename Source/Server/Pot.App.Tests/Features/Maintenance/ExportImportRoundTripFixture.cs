@@ -166,7 +166,7 @@ public class ExportImportRoundTripFixture : PotFixtureBase
             Note = "Imported"
         };
 
-        var createResult = await createService.CreateExpenseAsync(importInput, CancellationToken.None);
+        var createResult = await createService.CreateExpenseAsync(importInput, TestContext.Current.CancellationToken);
 
         createResult.IsSuccess.ShouldBeTrue();
 
@@ -186,7 +186,7 @@ public class ExportImportRoundTripFixture : PotFixtureBase
 
         var exporter = new ExpensesExporter(expensesService);
 
-        var content = await exporter.ExportAllAsync(CancellationToken.None);
+        var content = await exporter.ExportAllAsync(TestContext.Current.CancellationToken);
 
         using var enumerator = new CsvRowEnumerator<ExpenseCsvRow, IExpenseCsvRow>(new MemoryStream(content));
 

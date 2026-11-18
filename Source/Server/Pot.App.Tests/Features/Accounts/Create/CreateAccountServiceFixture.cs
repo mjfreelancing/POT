@@ -66,7 +66,7 @@ public class CreateAccountServiceFixture : PotFixtureBase
                 Reserved = 2.005d
             };
 
-            var result = await service.CreateAccountAsync(input, CancellationToken.None);
+            var result = await service.CreateAccountAsync(input, TestContext.Current.CancellationToken);
 
             result.IsSuccess.ShouldBeTrue();
             capturedAccount.ShouldNotBeNull();
