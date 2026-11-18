@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/auth';
+import { collectApiFailures } from '../../helpers/api';
 import { selectRadixOption } from '../../helpers/radix';
 
 // The projection chart's full legend strip is desktop-oriented; the mobile
@@ -22,6 +23,8 @@ test('projections renders the chart and account legend from the API', async ({
     isMobileProject(testInfo),
     'Projection chart legend is desktop-only; mobile projection filters are covered by mobileCardGrids.test.ts',
   );
+
+  const apiFailures = collectApiFailures(page);
   const projectionsResponsePromise = page.waitForResponse(
     response =>
       response.url().includes('/api/projections') &&
@@ -56,6 +59,8 @@ test('projections renders the chart and account legend from the API', async ({
   });
 
   await expect(legendToggle).toBeVisible();
+
+  expect(apiFailures).toEqual([]);
 });
 
 // The Include switches live behind a compact trigger whose label states the
@@ -67,6 +72,8 @@ test('projections include switches are reachable on any viewport', async ({
   // Register the response wait before navigating (the repo's pattern for
   // API-backed UI). Under full-matrix load the projections fetch can outrun the
   // default expect timeout, so wait on the response rather than the chart text.
+  const apiFailures = collectApiFailures(page);
+
   const projectionsResponsePromise = page.waitForResponse(
     response =>
       response.url().includes('/api/projections') &&
@@ -91,6 +98,8 @@ test('projections include switches are reachable on any viewport', async ({
   for (const name of INCLUDE_SWITCH_NAMES) {
     await expect(page.getByRole('switch', { name })).toBeVisible();
   }
+
+  expect(apiFailures).toEqual([]);
 });
 
 // Each switch subtracts its own component from every series. The combined
@@ -105,6 +114,8 @@ test('toggling each include switch moves the plotted total and restoring it retu
     isMobileProject(testInfo),
     'Plotted-line comparison is desktop-only; the mobile switch reachability is covered above',
   );
+
+  const apiFailures = collectApiFailures(page);
 
   const projectionsResponsePromise = page.waitForResponse(
     response =>
@@ -153,6 +164,8 @@ test('toggling each include switch moves the plotted total and restoring it retu
     await toggle.click();
     await expect.poll(() => totalPath.getAttribute('d')).toBe(baselinePath);
   }
+
+  expect(apiFailures).toEqual([]);
 });
 
 // The combined series is the sum of the legend-visible accounts, so hiding an
@@ -164,6 +177,8 @@ test('toggling an account off/on changes the plotted total', async ({
     isMobileProject(testInfo),
     'Plotted-line comparison is desktop-only; the mobile legend is covered by mobileCardGrids.test.ts',
   );
+
+  const apiFailures = collectApiFailures(page);
 
   const projectionsResponsePromise = page.waitForResponse(
     response =>
@@ -222,6 +237,8 @@ test('toggling an account off/on changes the plotted total', async ({
   // per-account contribution is pinned by the chart-data hook tests and the
   // total-tooltip spec above.
   await expect.poll(() => totalPath.getAttribute('d')).not.toBe(hiddenPath);
+
+  expect(apiFailures).toEqual([]);
 });
 
 // The total's tooltip lists only the accounts currently shown in the legend, so
@@ -233,6 +250,8 @@ test('the total tooltip lists only the plotted accounts', async ({
     isMobileProject(testInfo),
     'Projection chart legend is desktop-only; mobile projection filters are covered by mobileCardGrids.test.ts',
   );
+
+  const apiFailures = collectApiFailures(page);
 
   const projectionsResponsePromise = page.waitForResponse(
     response =>
@@ -283,6 +302,8 @@ test('the total tooltip lists only the plotted accounts', async ({
 
   await expect(tooltip).toContainText('Total (Selected Accounts)');
   await expect(tooltip).not.toContainText(accountDescription);
+
+  expect(apiFailures).toEqual([]);
 });
 
 // Waits until a line's `d` attribute stops changing between reads and returns

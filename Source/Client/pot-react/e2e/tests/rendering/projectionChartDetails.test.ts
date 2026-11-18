@@ -3,6 +3,7 @@ import { addDays, format } from 'date-fns';
 
 import { expect, test } from '../../fixtures/auth';
 import {
+    collectApiFailures,
     createAccountViaApi,
     createE2eRequestContext as createRequestContext,
     createExpenseViaApi,
@@ -246,6 +247,7 @@ test.describe.serial('Projection bar chart details (fixture-managed)', () => {
       'Projection chart legend is desktop-only; mobile projection filters are covered by mobileCardGrids.test.ts',
     );
 
+    const apiFailures = collectApiFailures(page);
     const request = await createRequestContext(playwright);
     const setup = await createProjectionDay(request, accessToken, 6);
 
@@ -369,6 +371,10 @@ test.describe.serial('Projection bar chart details (fixture-managed)', () => {
 
       await page.mouse.click(barCenterX, gridBox!.y + 4);
       await expect(page.getByRole('dialog')).toHaveCount(0);
+
+      // The sheet is fed by the projections payload, and an assertion on the sheet passes even when another
+      // request the page made is refused.
+      expect(apiFailures).toEqual([]);
     } finally {
       try {
         await teardownProjectionDay(request, accessToken, setup);
@@ -388,6 +394,7 @@ test.describe.serial('Projection bar chart details (fixture-managed)', () => {
       'Projection chart legend is desktop-only; mobile projection filters are covered by mobileCardGrids.test.ts',
     );
 
+    const apiFailures = collectApiFailures(page);
     const request = await createRequestContext(playwright);
     const setup = await createProjectionDay(request, accessToken, 9);
 
@@ -469,6 +476,8 @@ test.describe.serial('Projection bar chart details (fixture-managed)', () => {
 
       await page.getByRole('button', { name: 'Close expense details' }).click();
       await expect(dialog).toBeHidden();
+
+      expect(apiFailures).toEqual([]);
     } finally {
       try {
         await teardownProjectionDay(request, accessToken, setup);

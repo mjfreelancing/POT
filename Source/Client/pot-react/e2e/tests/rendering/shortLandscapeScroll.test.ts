@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/auth';
+import { collectApiFailures } from '../../helpers/api';
 
 // Short-landscape regression coverage.
 //
@@ -36,6 +37,8 @@ test.describe('short landscape viewport (desktop layout, ~390px tall)', () => {
     test(`${route} keeps its list scrollable instead of collapsing to 0px`, async ({
       page,
     }) => {
+      const apiFailures = collectApiFailures(page);
+
       await page.goto(route);
 
       // Desktop data table renders at this width (>=768px).
@@ -53,12 +56,17 @@ test.describe('short landscape viewport (desktop layout, ~390px tall)', () => {
       expect(metrics.clientHeight).toBeGreaterThan(0);
       expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
       expect(metrics.afterScrollTop).toBeGreaterThan(0);
+
+      // A layout assertion passes even when the list request behind it is refused.
+      expect(apiFailures).toEqual([]);
     });
   }
 
   test('projections renders a sized chart when opened directly in landscape', async ({
     page,
   }) => {
+    const apiFailures = collectApiFailures(page);
+
     await page.goto('/projections');
 
     await expect(
@@ -91,6 +99,10 @@ test.describe('short landscape viewport (desktop layout, ~390px tall)', () => {
     expect(metrics.clientHeight).toBeGreaterThan(0);
     expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
     expect(metrics.afterScrollTop).toBeGreaterThan(0);
+
+    // The chart's figures come from the projections payload, and measuring the SVG passes even when a request
+    // behind it is refused.
+    expect(apiFailures).toEqual([]);
   });
 });
 

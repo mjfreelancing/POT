@@ -1,6 +1,7 @@
 import { expect, test } from '../../fixtures/auth';
 import {
   authHeaders,
+  collectApiFailures,
   createAccountViaApi,
   createE2eRequestContext as createRequestContext,
   createExpenseViaApi,
@@ -46,6 +47,7 @@ test('expenses page: data table on desktop, card grid on mobile', async ({
 }, testInfo) => {
   const isMobile = isMobileProject(testInfo);
 
+  const apiFailures = collectApiFailures(page);
   const request = await createRequestContext(playwright);
   const description = `E2E CardGrid Expense ${Date.now()}`;
   let createdRowId: string | undefined;
@@ -90,6 +92,10 @@ test('expenses page: data table on desktop, card grid on mobile', async ({
       await expect(page.getByRole('table')).toBeVisible();
       await expect(page.getByText('Due:', { exact: true })).toHaveCount(0);
     }
+
+    // The page reads more than the list it renders, and an assertion on one row passes even when another
+    // request is refused.
+    expect(apiFailures).toEqual([]);
   } finally {
     if (createdRowId) {
       await deleteExpenseViaApi(request, accessToken, createdRowId);
@@ -105,6 +111,7 @@ test('incomes page: data table on desktop, card grid on mobile', async ({
 }, testInfo) => {
   const isMobile = isMobileProject(testInfo);
 
+  const apiFailures = collectApiFailures(page);
   const request = await createRequestContext(playwright);
   const description = `E2E CardGrid Income ${Date.now()}`;
   let createdRowId: string | undefined;
@@ -142,6 +149,8 @@ test('incomes page: data table on desktop, card grid on mobile', async ({
       await expect(page.getByRole('table')).toBeVisible();
       await expect(page.getByText('Due:', { exact: true })).toHaveCount(0);
     }
+
+    expect(apiFailures).toEqual([]);
   } finally {
     if (createdRowId) {
       await deleteIncomeViaApi(request, accessToken, createdRowId);
@@ -157,6 +166,7 @@ test('accounts page: data table on desktop, card grid on mobile', async ({
 }, testInfo) => {
   const isMobile = isMobileProject(testInfo);
 
+  const apiFailures = collectApiFailures(page);
   const request = await createRequestContext(playwright);
   const description = `E2E CardGrid Account ${Date.now()}`;
   let createdRowId: string | undefined;
@@ -188,6 +198,8 @@ test('accounts page: data table on desktop, card grid on mobile', async ({
       await expect(page.getByRole('table')).toBeVisible();
       await expect(page.getByText('Balance:', { exact: true })).toHaveCount(0);
     }
+
+    expect(apiFailures).toEqual([]);
   } finally {
     if (createdRowId) {
       await deleteAccountViaApi(request, accessToken, createdRowId);

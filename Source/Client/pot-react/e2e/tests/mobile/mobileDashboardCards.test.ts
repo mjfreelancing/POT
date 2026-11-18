@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/auth';
+import { collectApiFailures } from '../../helpers/api';
 
 // Covers dashboard cards on mobile. Dashboard cards stack
 // correctly on mobile. The dashboard's overview card grids use
@@ -23,6 +24,8 @@ test('dashboard overview cards: 2 columns per row on mobile, 3-4 on desktop', as
   page,
 }, testInfo) => {
   const isMobile = isMobileProject(testInfo);
+
+  const apiFailures = collectApiFailures(page);
 
   // The Accounts Overview section is open by default (no persisted local
   // storage on a fresh login) — wait for it and its cards.
@@ -68,6 +71,10 @@ test('dashboard overview cards: 2 columns per row on mobile, 3-4 on desktop', as
     // lg:grid-cols-3 / xl:grid-cols-4 on desktop — at least three share a row.
     expect(maxCardsPerRow).toBeGreaterThanOrEqual(3);
   }
+
+  // The dashboard reads more than the cards measured above, and an assertion on a layout passes even when one of
+  // those requests is refused.
+  expect(apiFailures).toEqual([]);
 });
 
 test('mobile: dashboard renders with no horizontal overflow', async ({
@@ -77,6 +84,8 @@ test('mobile: dashboard renders with no horizontal overflow', async ({
     !isMobileProject(testInfo),
     'Horizontal-overflow guard is meaningful only on a narrow mobile viewport',
   );
+
+  const apiFailures = collectApiFailures(page);
 
   await page.goto('/dashboard');
 
@@ -91,4 +100,6 @@ test('mobile: dashboard renders with no horizontal overflow', async ({
     () => document.documentElement.scrollWidth <= window.innerWidth + 1,
   );
   expect(noHorizontalOverflow).toBeTruthy();
+
+  expect(apiFailures).toEqual([]);
 });

@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/auth';
+import { collectApiFailures } from '../../helpers/api';
 
 // Covers the app sidebar. On
 // desktop it is a persistent inline rail whose nav links are always visible;
@@ -28,6 +29,8 @@ test('sidebar: mobile opens as a sheet; desktop is inline', async ({
   page,
 }, testInfo) => {
   const isMobile = isMobileProject(testInfo);
+
+  const apiFailures = collectApiFailures(page);
 
   await page.goto('/dashboard');
 
@@ -59,6 +62,10 @@ test('sidebar: mobile opens as a sheet; desktop is inline', async ({
       page.getByRole('heading', { name: 'Financial Dashboard', exact: true }),
     ).toBeVisible();
   }
+
+  // Navigating between pages reads several endpoints, and an assertion on one link passes even when another
+  // request is refused.
+  expect(apiFailures).toEqual([]);
 });
 
 test('mobile: Toggle Sidebar opens the sheet; Escape closes it', async ({
@@ -68,6 +75,8 @@ test('mobile: Toggle Sidebar opens the sheet; Escape closes it', async ({
     !isMobileProject(testInfo),
     'Desktop has no overlay sheet; this verifies the mobile sheet lifecycle',
   );
+
+  const apiFailures = collectApiFailures(page);
 
   await page.goto('/dashboard');
 
@@ -81,6 +90,8 @@ test('mobile: Toggle Sidebar opens the sheet; Escape closes it', async ({
   // Escape dismisses the shadcn Sheet.
   await page.keyboard.press('Escape');
   await expect(accountsLink).toHaveCount(0); // closed
+
+  expect(apiFailures).toEqual([]);
 });
 
 test('desktop: Toggle Sidebar collapses and expands the sidebar rail', async ({
@@ -90,6 +101,8 @@ test('desktop: Toggle Sidebar collapses and expands the sidebar rail', async ({
     isMobileProject(testInfo),
     'Mobile uses the overlay sheet; this verifies the desktop rail collapse',
   );
+
+  const apiFailures = collectApiFailures(page);
 
   await page.goto('/dashboard');
 
@@ -101,4 +114,6 @@ test('desktop: Toggle Sidebar collapses and expands the sidebar rail', async ({
   await expect(sidebar).toHaveAttribute('data-state', 'collapsed');
   await trigger.click();
   await expect(sidebar).toHaveAttribute('data-state', 'expanded');
+
+  expect(apiFailures).toEqual([]);
 });

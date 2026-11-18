@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/auth';
+import { collectApiFailures } from '../../helpers/api';
 
 // Desktop-only: the /expenses page renders a data table on desktop but mobile
 // cards on mobile, where the Next Due status is shown as a "(N days)" caption
@@ -99,6 +100,8 @@ test('expenses list renders seeded rows, amounts, status and frequency', async (
     'Expense list table is desktop-only; mobile uses the card grid',
   );
 
+  const apiFailures = collectApiFailures(page);
+
   const expensesResponsePromise = page.waitForResponse(
     response =>
       response.url().includes('/api/expenses') &&
@@ -140,4 +143,8 @@ test('expenses list renders seeded rows, amounts, status and frequency', async (
   await expect(
     page.getByText(frequencyLabel, { exact: true }).first(),
   ).toBeVisible();
+
+  // The page reads more than the list it renders, and an assertion on one row passes even when another request is
+  // refused.
+  expect(apiFailures).toEqual([]);
 });

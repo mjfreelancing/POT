@@ -30,6 +30,7 @@ Config: `playwright.config.ts` (`testDir: './e2e'`; keep new tests under `e2e/`)
 - Avoid selectors tied to styling/animation classes or fragile DOM structure. Do not assume timing or order across parallel workers. Prefer deterministic fixture setup over in-test data mutation.
 - Data readiness: prefer prefetching read-only lists via the `accessToken` request context over `page.waitForResponse` (see `mobileCardGrids.test.ts`). For a UI signal after a slow POST (such as a success toast), capture the response, assert `response.ok()`, `await response.finished()`, then assert with `{ timeout: 30_000 }` (see `quickActions.test.ts`).
 - API-backed expectations: register `waitForResponse` before the click/navigation that triggers the fetch, validate the response contract shape, then assert UI values derived from the payload.
+- A page-driving test also asserts the page made no failed API call: `collectApiFailures(page)` from `e2e/helpers/api.ts`, called before the navigation and asserted empty after the last assertion (before any `finally` cleanup). Playwright fails on neither a failed response nor the console error that follows one, so an assertion on one figure passes while an unrelated request 4xxs. A spec whose purpose is that failure — authorization, validation, rate limiting, concurrency — passes the `expected` predicate instead; never drop the assertion to make such a spec pass.
 
 ## Isolation classification
 

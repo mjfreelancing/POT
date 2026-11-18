@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/auth';
+import { collectApiFailures } from '../../helpers/api';
 
 // Covers sheets/dialogs on mobile.
 //
@@ -33,6 +34,8 @@ const sheetContent = (page: import('@playwright/test').Page) =>
 test('create sheet opens as a dialog with its title and closes via Cancel', async ({
   page,
 }) => {
+  const apiFailures = collectApiFailures(page);
+
   await page.goto('/accounts');
   await page.getByRole('button', { name: 'Add a new account' }).click();
 
@@ -50,12 +53,16 @@ test('create sheet opens as a dialog with its title and closes via Cancel', asyn
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page).toHaveURL(/\/accounts$/);
   await expect(sheet).toHaveCount(0);
+
+  expect(apiFailures).toEqual([]);
 });
 
 test('form sheet is sized responsively (3/4 width on mobile, constrained on desktop)', async ({
   page,
 }, testInfo) => {
   const isMobile = isMobileProject(testInfo);
+
+  const apiFailures = collectApiFailures(page);
 
   await page.goto('/accounts');
   await page.getByRole('button', { name: 'Add a new account' }).click();
@@ -76,6 +83,8 @@ test('form sheet is sized responsively (3/4 width on mobile, constrained on desk
     // 1280px viewport — a constrained side sheet, not full-width.
     expect(box!.width).toBeLessThan(600);
   }
+
+  expect(apiFailures).toEqual([]);
 });
 
 test('mobile: the long expense form sheet scrolls', async ({
@@ -85,6 +94,8 @@ test('mobile: the long expense form sheet scrolls', async ({
     !isMobileProject(testInfo),
     'Verifies the mobile long-form scroll behaviour (short viewport)',
   );
+
+  const apiFailures = collectApiFailures(page);
 
   await page.goto('/expenses');
   await page.getByRole('button', { name: 'Add a new expense' }).click();
@@ -98,4 +109,6 @@ test('mobile: the long expense form sheet scrolls', async ({
     element => element.scrollHeight > element.clientHeight,
   );
   expect(isScrollable).toBeTruthy();
+
+  expect(apiFailures).toEqual([]);
 });

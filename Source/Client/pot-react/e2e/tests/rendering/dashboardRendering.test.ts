@@ -63,6 +63,8 @@ const dueWithinDays =
 test('dashboard renders seeded account rollups and upcoming items', async ({
   page,
 }) => {
+  const apiFailures = collectApiFailures(page);
+
   const accountsResponsePromise = page.waitForResponse(
     response =>
       response.url().includes('/api/accounts') &&
@@ -171,6 +173,10 @@ test('dashboard renders seeded account rollups and upcoming items', async ({
         .first(),
     ).toBeVisible();
   }
+
+  // The dashboard reads more than the figures asserted above, and an assertion on one of them passes even when
+  // another request is refused.
+  expect(apiFailures).toEqual([]);
 });
 
 // The account total is the sum the client computes itself, and summing two-decimal values lands a fraction of a
