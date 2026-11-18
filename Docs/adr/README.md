@@ -130,6 +130,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0045](ADR-0045-no-end-to-end-test-shares-authentication-state-with-another.md)                                                        | No end-to-end test shares authentication state with another                                                         | accepted   |
 | [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md)                                          | Tenants are provisioned and destroyed by the product's own routes in tests                                          | accepted   |
 | [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md)                               | The client and server deploy separately, and API version skew is accepted for minutes                               | accepted   |
+| [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md)                                            | Money is stored as a double and rounded to two decimals at the boundary                                             | proposed   |
 
 ### Backend
 
@@ -199,9 +200,10 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 ## By status
 
-### Proposed (1)
+### Proposed (2)
 
 - [ADR-0054](ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) — Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry
+- [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md) — Money is stored as a double and rounded to two decimals at the boundary
 
 ### Accepted (57)
 
@@ -281,5 +283,6 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | PRD-0030 | [ADR-0012](ADR-0012-every-failure-is-written-as-a-problem-details-document.md), [ADR-0018](ADR-0018-api-hooks-return-results-and-one-interceptor-normalises-failures.md), [ADR-0048](ADR-0048-validation-failures-answer-400-with-an-errors-map.md), [ADR-0050](ADR-0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md)                                                                                                                     |
 | PRD-0031 | [ADR-0042](ADR-0042-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md)                                                                                                                                                                                                                                                                |
 | PRD-0035 | [ADR-0054](ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md)                                                                                                                                                                                                                                                                                                                                                      |
+| PRD-0037 | [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md)                                                                                                                                                                                                                                                                                                                                                                   |
 
 <!-- END GENERATED INDEX -->
