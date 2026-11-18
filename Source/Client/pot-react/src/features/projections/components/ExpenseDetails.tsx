@@ -11,7 +11,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import type { ProjectionExpenseItemWithAccount } from '@/data/projection';
-import { formatMoneyValue } from '@/lib';
+import { formatMoneyValue, roundMoneyValue } from '@/lib';
 
 type ExpenseDetailsProps = {
   isOpen: boolean;
@@ -39,7 +39,9 @@ function ExpenseDetails({
   }
 
   // Total always represents all items passed from chart selection scope.
-  const totalExpenses = items.reduce((sum, item) => sum + item.amount, 0);
+  const totalExpenses = roundMoneyValue(
+    items.reduce((sum, item) => sum + item.amount, 0),
+  );
 
   // Normal behavior respects hidden series. Total-bar selection can opt into
   // all-account visibility so the sheet matches total hover/click semantics.
@@ -48,9 +50,8 @@ function ExpenseDetails({
     : items.filter(item => !hiddenSeries.includes(item.accountRowId));
 
   // Filtered total is intentionally based on visible rows only.
-  const filteredTotal = visibleItems.reduce(
-    (sum, item) => sum + item.amount,
-    0,
+  const filteredTotal = roundMoneyValue(
+    visibleItems.reduce((sum, item) => sum + item.amount, 0),
   );
 
   // Denominator comes from full-day totals supplied by the chart component.

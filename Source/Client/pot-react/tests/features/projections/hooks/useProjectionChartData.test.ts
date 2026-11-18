@@ -474,6 +474,49 @@ describe('useProjectionChartData', () => {
       // Account 1 alone: 120 - 10 - 15 - 5 = 90.
       expect(result.current.chartData[0]!.total).toBe(90);
     });
+
+    test('plots a series and a total that subtract to nothing as zero', () => {
+      // Subscribing two-decimal components leaves a fraction of a cent behind: 0.3 - 0.1 - 0.2 is -2.78e-17, and
+      // plotted raw that is a negative zero the chart would draw below its own axis.
+      const zeroDay = {
+        date: '2026-04-01',
+        balance: 0.3,
+        reserved: 0.1,
+        arrears: 0,
+        unpaidAccrual: 0.2,
+        dailyAccrual: 0,
+        incomeReceived: 0,
+        expensesPaid: 0,
+        expenseItems: [],
+        incomeItems: [],
+      };
+
+      const projectionData = createProjection({
+        accounts: [
+          {
+            rowId: 'account-1',
+            description: 'Bills Account',
+            dates: [zeroDay],
+          },
+          {
+            rowId: 'account-2',
+            description: 'Spending Account',
+            dates: [zeroDay],
+          },
+        ],
+      });
+
+      const { result } = renderHook(() =>
+        useProjectionChartData(projectionData, 'balance', INCLUDE_ALL),
+      );
+
+      const point = result.current.chartData[0]!;
+
+      expect(point['account-1']).toBe(0);
+      expect(Object.is(point['account-1'], -0)).toBe(false);
+      expect(point.total).toBe(0);
+      expect(Object.is(point.total, -0)).toBe(false);
+    });
   });
 
   describe('timeline', () => {

@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { describe, expect, test } from 'vitest';
 
 import type { MoneyValue } from '@/lib';
-import { formatMoneyValue } from '@/lib';
+import { formatMoneyValue, roundMoneyValue } from '@/lib';
 
 describe('Money Utils', () => {
   describe('formatMoneyValue', () => {
@@ -46,6 +46,13 @@ describe('Money Utils', () => {
       expect(result).toBe('$0.00');
     });
 
+    test('should never format a value that rounds to nothing as negative zero', () => {
+      // A total computed from two-decimal values can land a fraction below zero, and formatting that raw renders
+      // '-$0.00', which is a figure the product never means.
+      expect(formatMoneyValue(0.3 - 0.1 - 0.2)).toBe('$0.00');
+      expect(formatMoneyValue(-0.0001)).toBe('$0.00');
+    });
+
     test('should respect different currency and locale combinations', () => {
       const value = 1234567.89;
 
@@ -75,6 +82,27 @@ describe('Money Utils', () => {
       expect(() =>
         formatMoneyValue(100, 'INVALID-CURRENCY-CODE', 'en-AU'),
       ).toThrow(RangeError);
+    });
+  });
+
+  describe('roundMoneyValue', () => {
+    test('should round a computed total to two decimals', () => {
+      expect(roundMoneyValue(0.1 + 0.2)).toBe(0.3);
+      expect(roundMoneyValue(1.2399999999999998)).toBe(1.24);
+      expect(roundMoneyValue(-1.2399999999999998)).toBe(-1.24);
+    });
+
+    test('should publish a positive zero for a total that rounds to nothing', () => {
+      const rounded = roundMoneyValue(0.3 - 0.1 - 0.2);
+
+      expect(rounded).toBe(0);
+      expect(Object.is(rounded, -0)).toBe(false);
+    });
+
+    test('should throw for a non-finite value', () => {
+      expect(() => roundMoneyValue(Number.POSITIVE_INFINITY)).toThrow(
+        TypeError,
+      );
     });
   });
 });

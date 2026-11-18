@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { EMPTY_ACCOUNT_ARRAY } from '@/data';
-import { formatMoneyValue } from '@/lib';
+import { formatMoneyValue, roundMoneyValue } from '@/lib';
 
 import type { AccountsSummary } from '../stores';
 import { accountsSummaryStore } from '../stores';
@@ -57,21 +57,22 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
 
   // Recalculate and update summary when accounts change
   useEffect(() => {
-    const totalBalance = accounts.reduce((sum, acct) => sum + acct.balance, 0);
-
-    const totalReserved = accounts.reduce(
-      (sum, acct) => sum + acct.reserved,
-      0,
+    // Each total is rounded as a total: summing two-decimal values leaves a fraction of a cent behind, and a total
+    // that lands just below zero would otherwise be shown, and coloured, as a small negative balance.
+    const totalBalance = roundMoneyValue(
+      accounts.reduce((sum, acct) => sum + acct.balance, 0),
     );
 
-    const totalAvailable = accounts.reduce(
-      (sum, acct) => sum + acct.available,
-      0,
+    const totalReserved = roundMoneyValue(
+      accounts.reduce((sum, acct) => sum + acct.reserved, 0),
     );
 
-    const totalStableExpenseAccrual = accounts.reduce(
-      (sum, acct) => sum + acct.stableExpenseAccrual,
-      0,
+    const totalAvailable = roundMoneyValue(
+      accounts.reduce((sum, acct) => sum + acct.available, 0),
+    );
+
+    const totalStableExpenseAccrual = roundMoneyValue(
+      accounts.reduce((sum, acct) => sum + acct.stableExpenseAccrual, 0),
     );
 
     setSummary(
@@ -173,3 +174,4 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
 }
 
 export default AccountsOverview;
+

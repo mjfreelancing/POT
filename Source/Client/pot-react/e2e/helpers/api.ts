@@ -1,4 +1,4 @@
-import type { APIRequestContext } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 /**
@@ -176,4 +176,57 @@ export async function deleteAccountViaApi(
   });
 
   expect([200, 204, 404]).toContain(response.status());
+}
+
+/**
+ * A request the page made that the API answered with a failure.
+ */
+export type ApiFailure = {
+  method: string;
+  url: string;
+  status: number;
+};
+
+/**
+ * Records every failed `/api/` response the page receives, so a test can assert the journey it drove made no
+ * failing call.
+ *
+ * A test that leaves a request failing is green for the wrong reason: assertions on the figures it cares about
+ * still pass while an unrelated request 4xxs, and Playwright fails neither on a failed response nor on the
+ * console error that follows. Call this before the navigation, exclude the failures the test deliberately
+ * provokes, and assert the result is empty once the assertions are done.
+ *
+ * @param page The page to watch
+ * @param expected Identifies failures the test provokes on purpose; those are not recorded
+ * @returns The failures recorded so far, filled as the page makes its requests
+ */
+export function collectApiFailures(
+  page: Page,
+  expected: (failure: ApiFailure) => boolean = () => false,
+): ApiFailure[] {
+  const failures: ApiFailure[] = [];
+
+  page.on('response', response => {
+    if (!response.url().includes('/api/')) {
+      return;
+    }
+
+    const status = response.status();
+
+    if (status < 400) {
+      return;
+    }
+
+    const failure: ApiFailure = {
+      method: response.request().method(),
+      url: response.url(),
+      status,
+    };
+
+    if (!expected(failure)) {
+      failures.push(failure);
+    }
+  });
+
+  return failures;
 }

@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/auth';
+import { collectApiFailures } from '../../helpers/api';
 
 // The dashboard renders the same sections on every viewport (metric grids and
 // account/expense/income cards are responsive), so this test runs on all projects.
@@ -171,3 +172,58 @@ test('dashboard renders seeded account rollups and upcoming items', async ({
     ).toBeVisible();
   }
 });
+
+// The account total is the sum the client computes itself, and summing two-decimal values lands a fraction of a
+// cent away from what the cards add up to: 0.3 - 0.1 - 0.2 is -2.78e-17. Formatting that raw is where the browser
+// renders '-$0.00', so the assertion belongs here rather than only in a unit test.
+//
+// The payload is fulfilled rather than seeded because no sequence of writes through the API produces those
+// figures, and creating accounts on the seeded site would change the totals the test above reads.
+test('dashboard renders an account total that sums to nothing as $0.00', async ({
+  page,
+}) => {
+  const apiFailures = collectApiFailures(page);
+
+  // The ids are GUIDs because the dashboard passes them to /api/accruals/status, which rejects anything else.
+  const account = (rowId: string, available: number) => ({
+    rowId,
+    etag: 0,
+    description: `Rounding ${available}`,
+    balance: 1,
+    reserved: 0,
+    totalExpenseAccrued: 0,
+    totalArrears: 0,
+    totalCommitted: 0,
+    stableExpenseAccrual: 0,
+    available,
+    linkedExpenses: 0,
+    linkedIncomes: 0,
+  });
+
+  await page.route('**/api/accounts', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([
+        account('8f14e45f-ceea-467f-a8b8-1d6a5c0b7e21', 0.3),
+        account('c9f0f895-fb98-4c98-8e9b-6a1c4d2f5b03', -0.1),
+        account('45c48cce-2e2d-4fbd-aa1d-7b6e5c3a9f14', -0.2),
+      ]),
+    }),
+  );
+
+  await page.goto('/dashboard');
+
+  await expect(
+    page.getByText('Total Available', { exact: true }),
+  ).toBeVisible();
+
+  // The cards carry their own figures, so the only total that can be -$0.00 is the available one.
+  await expect(page.getByText('-$0.00', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('$0.00', { exact: true }).first()).toBeVisible();
+
+  // The dashboard reads more than the accounts it totals, and an assertion on the total passes even when one of
+  // those other requests is refused.
+  expect(apiFailures).toEqual([]);
+});
+

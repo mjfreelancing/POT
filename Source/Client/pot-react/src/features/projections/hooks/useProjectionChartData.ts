@@ -12,6 +12,7 @@ import {
   DEFAULT_PROJECTION_INCLUDE,
   TOTAL_SERIES_KEY,
 } from '@/data/projection';
+import { roundMoneyValue } from '@/lib';
 
 // Predefined colors for different accounts in the chart
 // These are used in a round-robin fashion if there are more accounts than colors
@@ -140,14 +141,17 @@ function useProjectionChartData(
       data.accounts.forEach(account => {
         const dateBalance = account.dates.find(db => db.date === date)!;
         const value = resolveMetricValue(dateBalance, metric, activeInclude);
-        point[account.rowId] = value; // Dynamic key based on account ID
+        point[account.rowId] = roundMoneyValue(value); // Dynamic key based on account ID
       });
 
-      // Add the combined total of the accounts shown in the legend
-      point[TOTAL_SERIES_KEY] = visibleAccounts.reduce((total, account) => {
-        const dateBalance = account.dates.find(db => db.date === date)!;
-        return total + resolveMetricValue(dateBalance, metric, activeInclude);
-      }, 0);
+      // Add the combined total of the accounts shown in the legend, rounded as a total for the same reason the
+      // series itself is rounded.
+      point[TOTAL_SERIES_KEY] = roundMoneyValue(
+        visibleAccounts.reduce((total, account) => {
+          const dateBalance = account.dates.find(db => db.date === date)!;
+          return total + resolveMetricValue(dateBalance, metric, activeInclude);
+        }, 0),
+      );
 
       // Process expense items - attach account information to each expense
       point.expenseItems = data.accounts.flatMap(account => {
@@ -212,3 +216,4 @@ function useProjectionChartData(
 
 export { useProjectionChartData };
 export type { ChartDataPoint, UseProjectionChartDataResult };
+
