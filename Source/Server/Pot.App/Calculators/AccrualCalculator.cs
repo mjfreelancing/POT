@@ -15,7 +15,8 @@ namespace Pot.App.Calculators;
 /// An account's aggregates are the sum of its per-expense results. An expense flagged as excluded is not filtered
 /// out; it contributes a zeroed result so its detail entry is still produced.
 ///
-/// Monetary results are rounded to two decimal places, away from zero.
+/// Monetary results are rounded to two decimal places, away from zero, applied to the decimal value a result
+/// represents rather than to its binary approximation, and never left as a longer fraction.
 /// </remarks>
 internal sealed class AccrualCalculator : IAccrualCalculator
 {
@@ -27,8 +28,6 @@ internal sealed class AccrualCalculator : IAccrualCalculator
     {
         public static ExpenseAccrualResult Zero { get; } = new(0.0d, 0.0d, 0.0d, 0.0d);
     }
-
-    private const int AccrualRoundingDecimals = 2;
 
     /// <inheritdoc />
     public AccountAccrualView CalculateAccountTotals(IEnumerable<ExpenseAccrualPosition> positions, DateOnly asOfDate)
@@ -86,13 +85,18 @@ internal sealed class AccrualCalculator : IAccrualCalculator
             });
         }
 
+        // Each total is rounded rather than left as the sum: adding two-decimal values still produces a binary
+        // fraction. TotalCommitted is derived from the rounded parts, so the figures a reader sees reconcile.
+        var roundedAccrued = MonetaryRounding.Round(totalExpenseAccrued);
+        var roundedArrears = MonetaryRounding.Round(totalArrears);
+
         return new AccountAccrualView
         {
-            TotalExpenseAccrued = totalExpenseAccrued,
-            TotalArrears = totalArrears,
-            TotalCommitted = totalExpenseAccrued + totalArrears,
-            DailyExpenseAccrual = dailyExpenseAccrual,
-            StableExpenseAccrual = stableExpenseAccrual,
+            TotalExpenseAccrued = roundedAccrued,
+            TotalArrears = roundedArrears,
+            TotalCommitted = MonetaryRounding.Round(roundedAccrued + roundedArrears),
+            DailyExpenseAccrual = MonetaryRounding.Round(dailyExpenseAccrual),
+            StableExpenseAccrual = MonetaryRounding.Round(stableExpenseAccrual),
             Expenses = details ?? []
         };
     }
@@ -208,7 +212,7 @@ internal sealed class AccrualCalculator : IAccrualCalculator
     {
         if (asOfDate >= cycleNextDue)
         {
-            return facts.Amount;
+            return MonetaryRounding.Round(facts.Amount);
         }
 
         // A null accrual start cannot reach here (the accrual gate already requires one); defaulting to the due
@@ -217,7 +221,7 @@ internal sealed class AccrualCalculator : IAccrualCalculator
         var accrualDays = Math.Max(accrualStart.DaysUntil(cycleNextDue), 1);
         var daysFromAccrualStart = accrualStart.DaysUntil(asOfDate);
 
-        return Math.Round(facts.Amount / accrualDays * daysFromAccrualStart, AccrualRoundingDecimals, MidpointRounding.AwayFromZero);
+        return MonetaryRounding.Round(facts.Amount / accrualDays * daysFromAccrualStart);
     }
 
     // Returns the daily accrual rate for the cycle in progress.
@@ -234,11 +238,13 @@ internal sealed class AccrualCalculator : IAccrualCalculator
             var daysToNextDue = facts.Frequency.GetDaysToNext(cycleNextDue, facts.FrequencyCount);
 
             // Only accrue onwards when the expense will actually be due again.
-            return cycleNextDue.AddDays(daysToNextDue) < endDate ? facts.Amount / daysToNextDue : 0.0d;
+            return cycleNextDue.AddDays(daysToNextDue) < endDate
+                ? MonetaryRounding.Round(facts.Amount / daysToNextDue)
+                : 0.0d;
         }
 
         // The remaining obligation for the cycle in progress, spread over the days until it falls due.
-        return (facts.Amount - accrued) / Math.Max(asOfDate.DaysUntil(cycleNextDue), 1);
+        return MonetaryRounding.Round((facts.Amount - accrued) / Math.Max(asOfDate.DaysUntil(cycleNextDue), 1));
     }
 
     // Returns the stable accrual rate, which is a fixed contribution per configured period rather than a ramp.
@@ -258,13 +264,15 @@ internal sealed class AccrualCalculator : IAccrualCalculator
             // The zero/negative period guard is retained from the persisted rule as a division guard. The accrual
             // gate above already guarantees a positive period, so it is unreachable rather than a behaviour branch,
             // and it is kept because a negative or zero denominator would silently produce a nonsensical rate.
-            return totalDaysUntilDue > 0 ? facts.Amount / totalDaysUntilDue : 0.0d;
+            return totalDaysUntilDue > 0
+                ? MonetaryRounding.Round(facts.Amount / totalDaysUntilDue)
+                : 0.0d;
         }
 
         // Recurring contributions are gated by the end date, kept inclusive so a row still contributes on the
         // end date itself.
         return asOfDate <= facts.EndDate.GetValueOrDefault(DateOnly.MaxValue)
-            ? facts.Amount / facts.Frequency.GetAverageDaysToNext(facts.FrequencyCount)
+            ? MonetaryRounding.Round(facts.Amount / facts.Frequency.GetAverageDaysToNext(facts.FrequencyCount))
             : 0.0d;
     }
 }

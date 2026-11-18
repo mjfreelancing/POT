@@ -46,7 +46,11 @@ public class GetAllAccountsServiceFixture : PotFixtureBase
         output.TotalExpenseAccrued.ShouldBe(170.0d, "100 due today plus the weekly cycle in progress at its full amount");
         output.TotalArrears.ShouldBe(140.0d, "two past-due weekly occurrences at 70 each");
         output.TotalCommitted.ShouldBe(310.0d);
-        output.StableExpenseAccrual.ShouldBe(16.5710d, 0.001d);
+
+        // Each monthly bill contributes 100/30.436875 = 3.2854884 to the stable rate, which rounds to 3.29, and the
+        // weekly bill contributes 10.00. The total is the sum of those rounded contributions, so 3.29 + 10.00 + 3.29
+        // = 16.58 — a cent above the 16.57 that rounding the unrounded sum would produce.
+        output.StableExpenseAccrual.ShouldBe(16.58d);
     }
 
     [Fact]

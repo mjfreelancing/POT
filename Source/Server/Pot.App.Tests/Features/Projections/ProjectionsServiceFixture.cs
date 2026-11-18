@@ -2516,7 +2516,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 accountProjection.Dates[0].Balance.ShouldBe(1000.0d);
                 accountProjection.Dates[0].ExpensesPaid.ShouldBe(0.0d);
                 Available(accountProjection.Dates[0]).ShouldBe(896.77d, 0.01d);
-                accountProjection.Dates[0].DailyAccrual.ShouldBe(3.2258d, 0.001d);
+                accountProjection.Dates[0].DailyAccrual.ShouldBe(3.23d);
 
                 // Day 1: the current-cycle obligation measured on today is released by the fold, while the arrears
                 // stays held, so available keeps falling by the ramp alone.

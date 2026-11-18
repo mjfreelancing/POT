@@ -248,7 +248,7 @@ public class AccrualCalculatorFixture : PotFixtureBase
 
             view.TotalExpenseAccrued.ShouldBe(BillAmount);
             view.TotalArrears.ShouldBe(0.0d, "a bill due today is the current bill and is not arrears");
-            view.DailyExpenseAccrual.ShouldBe(3.2258d, 0.001d, "the full amount spread over the cycle now starting");
+            view.DailyExpenseAccrual.ShouldBe(3.23d, "the full amount spread over the cycle now starting, to two decimals");
 
             var available = CalculateAvailable(1000.0d, view);
             available.ShouldBe(900.0d, 0.001d);
@@ -269,7 +269,7 @@ public class AccrualCalculatorFixture : PotFixtureBase
 
             // carrying the past-due occurrence as arrears leaves the as-of-date rate reporting the cycle in
             // progress, which is the same rate the existing rules produce.
-            view.DailyExpenseAccrual.ShouldBe(3.2258d, 0.001d, "the remaining obligation over the days until the next cycle");
+            view.DailyExpenseAccrual.ShouldBe(3.23d, "the remaining obligation over the days until the next cycle, to two decimals");
             CalculateAvailable(1000.0d, view).ShouldBe(896.77d, 0.001d);
         }
 
@@ -492,8 +492,8 @@ public class AccrualCalculatorFixture : PotFixtureBase
 
             var view = Calculate(CreatePosition(recurring), AsOfDate);
 
-            // 100 divided by the calendar-averaged month length of 365.2425/12 days.
-            view.StableExpenseAccrual.ShouldBe(3.2855d, 0.001d);
+            // 100 divided by the calendar-averaged month length of 365.2425/12 days, rounded to two decimals.
+            view.StableExpenseAccrual.ShouldBe(3.29d);
         }
 
         [Fact]
@@ -503,7 +503,7 @@ public class AccrualCalculatorFixture : PotFixtureBase
 
             var view = Calculate(CreatePosition(recurring), AsOfDate);
 
-            view.StableExpenseAccrual.ShouldBe(3.2855d, 0.001d, "the end-date boundary is inclusive");
+            view.StableExpenseAccrual.ShouldBe(3.29d, "the end-date boundary is inclusive");
         }
 
         [Fact]
@@ -519,12 +519,14 @@ public class AccrualCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Spread_The_Remaining_Obligation_Over_The_Days_Until_The_Cycle_Falls_Due()
         {
-            // A row settled a day early: 3.13 has accrued of the 100, leaving 96.87 over the 31 days to 2025-02-15.
+            // Settled a day early: the row accrues 100/32 = 3.125 towards 2025-02-15, which is exactly on the
+            // midpoint and so rounds away from zero to 3.13. The 96.87 left spreads over the 31 days until the cycle
+            // falls due, 96.87/31 = 3.1248, which is just under the midpoint and so rounds down to 3.12.
             var settled = CreateExpense(nextDue: "2025-02-15", accrualStart: "2025-01-14");
 
             var view = Calculate(CreatePosition(settled), AsOfDate);
 
-            view.DailyExpenseAccrual.ShouldBe(3.1258d, 0.001d);
+            view.DailyExpenseAccrual.ShouldBe(3.12d);
         }
 
         [Fact]
@@ -535,10 +537,10 @@ public class AccrualCalculatorFixture : PotFixtureBase
             var expectations = new Dictionary<Frequency, double>
             {
                 [Frequency.Days] = 100.0d,
-                [Frequency.Weeks] = 14.2857d,
-                [Frequency.Months] = 3.2855d,
-                [Frequency.EndOfMonth] = 3.2855d,
-                [Frequency.Years] = 0.2738d
+                [Frequency.Weeks] = 14.29d,
+                [Frequency.Months] = 3.29d,
+                [Frequency.EndOfMonth] = 3.29d,
+                [Frequency.Years] = 0.27d
             };
 
             foreach (var (frequency, expected) in expectations)
@@ -547,7 +549,7 @@ public class AccrualCalculatorFixture : PotFixtureBase
 
                 var view = Calculate(CreatePosition(recurring), AsOfDate);
 
-                view.StableExpenseAccrual.ShouldBe(expected, 0.0001d, $"stable contribution for {frequency.Name}");
+                view.StableExpenseAccrual.ShouldBe(expected, $"stable contribution for {frequency.Name}");
             }
         }
 
@@ -573,6 +575,32 @@ public class AccrualCalculatorFixture : PotFixtureBase
             var view = Calculator.CalculateAccountWithExpenseDetail([CreatePosition(weeklyBill)], new DateOnly(2025, 1, 11));
 
             view.TotalExpenseAccrued.ShouldBeLessThanOrEqualTo(70.0d);
+        }
+
+        [Fact]
+        public void Should_Round_A_Midpoint_Value_Away_From_Zero()
+        {
+            // 2.01 spread over the two days of the cycle is 1.005, a decimal midpoint. Its binary value sits just
+            // below the midpoint, so rounding the double would answer 1.00 and disagree with the decimal a person
+            // reads. The published figure is the two-decimal one.
+            var expense = CreateExpense(amount: 2.01d, nextDue: "2025-01-17", accrualStart: "2025-01-15");
+
+            var view = Calculate(CreatePosition(expense), AsOfDate.AddDays(1));
+
+            view.TotalExpenseAccrued.ShouldBe(1.01d);
+        }
+
+        [Fact]
+        public void Should_Sum_Every_Expense_To_A_Two_Decimal_Total()
+        {
+            // Two amounts whose sum is a long fraction in binary arithmetic: 0.1 + 0.2 is 0.30000000000000004.
+            var tenth = CreateExpense(amount: 0.1d, nextDue: "2025-01-15", accrualStart: "2025-01-15");
+            var fifth = CreateExpense(amount: 0.2d, nextDue: "2025-01-15", accrualStart: "2025-01-15");
+
+            var view = Calculator.CalculateAccountTotals([CreatePosition(tenth), CreatePosition(fifth)], AsOfDate);
+
+            view.TotalExpenseAccrued.ShouldBe(0.3d);
+            view.TotalCommitted.ShouldBe(0.3d);
         }
     }
 }

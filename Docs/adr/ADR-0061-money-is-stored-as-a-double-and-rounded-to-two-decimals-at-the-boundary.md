@@ -78,6 +78,10 @@ Chosen option: 1. The rules it imposes:
   is a property of the current product rather than of the type.
 - Bad, because JavaScript has no decimal type, so the client rounds its own totals rather than computing
   them exactly.
+- Bad, because a value that is not finite has no two-decimal form and cannot be rounded. Converting it to
+  a decimal throws, so a non-finite result passes through unrounded: the rounding step must not be the
+  thing that fails on malformed input. The product can still publish such a value, which is a defect of
+  whatever produced it rather than of the rounding.
 
 This decision would be reopened by any of: multi-currency with exchange-rate multiplication chains;
 interest or compounding; reconciliation against a bank statement to the cent; regulatory reporting; or one
