@@ -100,9 +100,8 @@ After final approval:
 
 1. **Run the PRD's Manual Test Plan — unless it is `Not required`.** When the PRD marks it `Not required`, skip this step and state in the completion summary that the automated suites named by the PRD were the gate; add no results table. Otherwise ask the human to execute it against the built product and report the results, and **wait** — the run is theirs to perform, not the agent's. Record the outcome in the PRD's results table. If the human defers it, say so explicitly and do not record it as passed.
 2. **Record the evidence the plan holds, before the plan goes.** The TASKS file is a working document: its stage lists and checkboxes are worth nothing once the work is committed, but part of what it accumulated cannot be reconstructed. Move that part into the PRD as `## Verification Evidence`:
-   - **The deliberately-broken checks**, one row per fault — what was broken, what the suite answered, and the verdict. This is the only proof that the new assertions fire on a real defect, and it is expensive to repeat.
-   - **Measured baselines** a later reader would compare against to spot drift — suite durations, test counts, build times — each with the date it was taken.
-   - **The limits of the evidence**, so a number is not read as covering more than it does: a tool that cannot instrument the code, a suite that was not run, a result that holds only on an idle machine.
+   - **The deliberately-broken checks**, one row per fault — what was broken, what the suite answered, and the verdict. This is the only proof that the new assertions fire on a real defect. Inject each fault again against the finished change rather than copying the stage record, and if the loop was not repeated, was run by one person, or covers only part of the surface, say so in the limits.
+   - **The limits of the evidence**, so a number is not read as covering more than it does: a test that checks the rule rather than the product, a suite that was not run, a path the fault injection cannot reach.
      Leave the stage plan out. The commit messages and the PRD already record what happened, and a second document describing the same behaviour drifts away from the first.
 3. Do the completion bookkeeping defined in the "How this works" section of
    [Docs/prd/README.md](../../../Docs/prd/README.md): PRD `Status` to `Complete`, update

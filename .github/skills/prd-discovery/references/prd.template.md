@@ -164,15 +164,6 @@ answered, and the verdict.>
 | ---------------- | ----------------------- | ------- |
 | <fault>          | <failure observed>      | <proved> |
 
-### Measured baselines
-
-<Numbers a later reader would compare against to spot drift — suite durations, test counts, build
-times — each with the date it was taken and the machine it was taken on.>
-
-| Measure | Value | Date | Conditions |
-| ------- | ----- | ---- | ---------- |
-| <measure> | <value> | <yyyy-mm-dd> | <idle machine, cold build, …> |
-
 ### What the evidence cannot show
 
 <The limits: a tool that cannot instrument the code, a suite that was not run, a result that holds only
