@@ -73,5 +73,37 @@ public class CreateAccountServiceFixture : PotFixtureBase
             capturedAccount.Balance.ShouldBe(10.01d);
             capturedAccount.Reserved.ShouldBe(2.01d);
         }
+
+        [Fact]
+        public async Task Should_Store_An_Imported_Account_With_Two_Decimals_And_Its_RowId()
+        {
+            AccountEntity? capturedAccount = null;
+
+            _accountRepositoryFake
+                .AddAndSaveAsync(Arg.Do<AccountEntity>(account => capturedAccount = account), Arg.Any<CancellationToken>())
+                .Returns(1);
+
+            var service = new CreateAccountService(_accountRepositoryFake, _siteRepositoryFake, _preCreateCheckerFake,
+                _loggerFake);
+
+            // The importer supplies the row id so the account's expenses and incomes can be linked to it afterwards.
+            var importedRowId = Guid.NewGuid();
+
+            var input = new Input
+            {
+                RowId = importedRowId,
+                Description = "Everyday",
+                Balance = 10.005d,
+                Reserved = 2.005d
+            };
+
+            var result = await service.CreateAccountAsync(input, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeTrue();
+            capturedAccount.ShouldNotBeNull();
+            capturedAccount.RowId.ShouldBe(importedRowId);
+            capturedAccount.Balance.ShouldBe(10.01d);
+            capturedAccount.Reserved.ShouldBe(2.01d);
+        }
     }
 }

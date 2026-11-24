@@ -130,7 +130,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0045](ADR-0045-no-end-to-end-test-shares-authentication-state-with-another.md)                                                        | No end-to-end test shares authentication state with another                                                         | accepted   |
 | [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md)                                          | Tenants are provisioned and destroyed by the product's own routes in tests                                          | accepted   |
 | [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md)                               | The client and server deploy separately, and API version skew is accepted for minutes                               | accepted   |
-| [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md)                                            | Money is stored as a double and rounded to two decimals at the boundary                                             | proposed   |
+| [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md)                                            | Money is stored as a double and rounded to two decimals at the boundary                                             | accepted   |
 
 ### Backend
 
@@ -200,12 +200,11 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 ## By status
 
-### Proposed (2)
+### Proposed (1)
 
 - [ADR-0054](ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) — Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry
-- [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md) — Money is stored as a double and rounded to two decimals at the boundary
 
-### Accepted (57)
+### Accepted (58)
 
 - [ADR-0001](ADR-0001-optimistic-concurrency-is-checked-in-the-application.md) — Optimistic concurrency is checked in the application, not by the database
 - [ADR-0002](ADR-0002-endpoints-are-minimal-api-slices-with-their-own-models.md) — Endpoints are minimal API slices with their own request and response models
@@ -264,6 +263,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0058](ADR-0058-hosted-integration-tests-derive-their-cases-and-isolation-checks-from-the-contract-and-the-model.md) — Hosted integration tests derive their cases and isolation checks from the contract and the model
 - [ADR-0059](ADR-0059-the-client-api-types-are-hand-written-and-the-committed-contract-is-a-reference.md) — The client's API types are hand-written, and the committed contract is a reference
 - [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md) — The client and server deploy separately, and API version skew is accepted for minutes
+- [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md) — Money is stored as a double and rounded to two decimals at the boundary
 
 ### Superseded (2)
 

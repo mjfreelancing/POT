@@ -1,7 +1,7 @@
 ---
 id: ADR-0061
 title: Money is stored as a double and rounded to two decimals at the boundary
-status: proposed
+status: accepted
 date: 2026-11-16
 area: cross-cutting
 related-prds: [PRD-0037]

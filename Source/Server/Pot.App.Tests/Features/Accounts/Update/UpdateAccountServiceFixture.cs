@@ -69,5 +69,30 @@ public class UpdateAccountServiceFixture : PotFixtureBase
             existingAccount.Balance.ShouldBe(10.01d);
             existingAccount.Reserved.ShouldBe(2.01d);
         }
+
+        [Fact]
+        public async Task Should_Fail_When_Account_Does_Not_Exist()
+        {
+            _accountRepositoryFake
+                .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns((AccountEntity?)null);
+
+            var service = new UpdateAccountService(_accountRepositoryFake, _preUpdateCheckerFake, _loggerFake);
+
+            var input = new Input
+            {
+                RowId = Guid.NewGuid(),
+                Etag = 1,
+                Description = "Everyday"
+            };
+
+            var result = await service.UpdateAccountAsync(input, TestContext.Current.CancellationToken);
+
+            result.IsSuccess.ShouldBeFalse();
+
+            await _accountRepositoryFake
+                .DidNotReceive()
+                .SaveAsync(Arg.Any<CancellationToken>());
+        }
     }
 }

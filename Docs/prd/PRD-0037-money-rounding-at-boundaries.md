@@ -1,6 +1,6 @@
 # Money Rounding at Boundaries PRD
 
-**Status:** Planned
+**Status:** Complete
 **Priority:** Medium
 **Last Updated:** 2026-11-18
 **Feature ID:** 0037
@@ -110,19 +110,20 @@ Delivery replaces each row with the test that proves it, adding whatever tests a
 coverage. Every row must name a test before this document closes: the approval of this PRD is conditional
 on that, not on the tests that happen to exist today.
 
-| Requirement | Verified by                                                                                             |
-| ----------- | ------------------------------------------------------------------------------------------------------- |
-| A1, A2      | `Pot.App.Tests/Calculators/AccrualCalculatorFixture.cs`, including a value at a decimal midpoint        |
-| A3          | The server build — the conversion changes no signature                                                  |
-| B1, B2      | `AccrualCalculatorFixture`, and the accounts read path in the hosted suite                              |
-| B3          | `AccrualCalculatorFixture` — the published figures reconcile                                            |
-| B4          | Review of the remark against the implementation                                                         |
-| C1, C2, C3  | `Pot.App.Tests/Features/Projections/ProjectionsServiceFixture.cs`, a short forecast against a long one  |
-| D1, D2      | `Pot.App.Tests/Features/Maintenance/ExportImportRoundTripFixture.cs`, a three-decimal row stored as two |
-| D3          | The migration set is unchanged                                                                          |
-| E1, E2, E3  | `tests/lib/moneyUtils.test.ts` — rounding and negative zero                                             |
-| E4          | The chart data hook's unit test                                                                         |
-| F1          | `ExportImportRoundTripFixture`                                                                          |
+| Requirement | Verified by                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| A1, A2      | `MonetaryRoundingFixture` — two decimals away from zero, and a decimal midpoint a `double` rounds the other way |
+| A3          | The solution builds in Release with no signature changed                                                        |
+| B1, B2      | `AccrualCalculatorFixture` — every published figure is two decimals, including each row's arrears               |
+| B3          | `Get/AccountOutputFixture`, `GetAll/AccountOutputFixture`, and the hosted `AccrualDerivationFixture`            |
+| B4          | The accrual calculator's remark, reviewed against the implementation                                            |
+| C1, C2      | `ProjectionsServiceFixture` — every day's figures are two decimals, and the balance carries forward             |
+| C3          | `ProjectionsServiceFixture` — a short forecast and a long one agree on every day they share                     |
+| D1, D2      | The six account, expense and income write fixtures — writing `10.005` stores `10.01`                            |
+| D3          | The migration set is unchanged                                                                                  |
+| E1, E2, E3  | `tests/lib/moneyUtils.test.ts`, `AccountsOverview.test.tsx`, and the dashboard browser case                     |
+| E4          | `useProjectionChartData.test.ts` — the series and the total round to two decimals                               |
+| F1          | `ExportImportRoundTripFixture` — an imported three-decimal amount exports as two                                |
 
 ## Out of Scope
 
@@ -194,8 +195,10 @@ manual pass would repeat those assertions against the same code:
 - a three-decimal amount stored as two. The import takes rows rather than a file, so a fixture supplies
   the row directly and nothing about file reading needs exercising —
   `Pot.App.Tests/Features/Maintenance/ExportImportRoundTripFixture.cs`;
-- a rounded total, including the negative-zero case — `tests/lib/moneyUtils.test.ts`;
-- a zero total rendering as `$0.00` rather than `-$0.00` in a real browser — a case added to
+- a rounded total, including the negative-zero case — `tests/lib/moneyUtils.test.ts`, and
+  `tests/features/dashboard/AccountsOverview.test.tsx` for the dashboard's own total;
+- a zero total rendering as `$0.00` rather than `-$0.00` in a real browser —
+  `dashboard renders an account total that sums to nothing as $0.00` in
   `e2e/tests/rendering/dashboardRendering.test.ts`.
 
 That last one is the only behaviour a unit test cannot fully prove, because the formatting is the
@@ -218,20 +221,78 @@ Append-only, oldest first. The text above is this document as approved; read it 
 
 ## Verification Evidence
 
-Filled in by the delivery skill at close-out, from the stage plan.
+Each behaviour was written as a failing test first and then made to pass, so the table records what the suite
+said before the change and a later reader can repeat the check.
+
+### Red before green
+
+| Requirement | Test                                                      | What it said before the change                                                    |
+| ----------- | --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| A1, A2      | `MonetaryRoundingFixture`                                 | `1.005` rounded to `1.00` without the conversion to a decimal                     |
+| A2          | `AccrualCalculatorFixture` — midpoint value               | an accrued amount whose exact value is a midpoint landed on the wrong cent        |
+| B1          | `AccrualCalculatorFixture` — per-row arrears              | `300.29999999999995` for three past-due occurrences of `100.10`                   |
+| B1          | `MonetaryRoundingFixture` — negative zero                 | a value that rounds to nothing came back as `-0`, which serialises as `-0`        |
+| B3          | `Get/AccountOutputFixture`, `GetAll/AccountOutputFixture` | `0.09999999999999998` for `0.3 - 0.1 - 0.1`                                       |
+| B3          | `AccrualDerivationFixture` (hosted)                       | the same figure on the wire, because the response recomputed it                   |
+| C1          | `ProjectionsServiceFixture` — every day two decimals      | a balance of `2366.6800000000003`                                                 |
+| C2          | `ProjectionsServiceFixture` — the carry                   | `998.9999999999998` after ten payments of `0.10`                                  |
+| C3          | `ProjectionsServiceFixture` — short against long          | passed already: the loop walks forward, so this is a guard rather than a red test |
+| D1, D2      | the six account, expense and income write fixtures        | `10.005` was stored as `10.005`                                                   |
+| F1          | `ExportImportRoundTripFixture`                            | an imported `10.005` was exported as `10.005`                                     |
+| E1, E2      | `moneyUtils.test.ts`, `AccountsOverview.test.tsx`         | `-$0.00` for a total that rounds to nothing                                       |
+| E4          | `useProjectionChartData.test.ts`                          | the plotted series and the total carried a negative zero                          |
+
+The browser case is proven twice over: it renders `$0.00` where the raw total is `-2.78e-17`, and its
+`collectApiFailures` assertion was made to fail by putting a non-GUID id back into the payload, which the API
+refused with a `400` that every other assertion in the test ignored.
+
+### Suites
+
+| Suite                                 | Result                                                            |
+| ------------------------------------- | ----------------------------------------------------------------- |
+| `dotnet build pot.sln -c Release`     | 0 warnings, 0 errors                                              |
+| Server unit and hosted suites         | 1296 passed, 0 failed (296 hosted, 9m29s)                         |
+| `npm run build`                       | built, 62 precache entries                                        |
+| Client unit suite                     | 996 passed in 174 files                                           |
+| Prodlike E2E matrix, four projects    | 322 passed, 0 failed (7m36s)                                      |
+| Server coverage (`code_coverage.ps1`) | line 90.6%, branch 78.4%; every class this change touched at 100% |
+
+The branches those last two tests close were uncovered before this change — the importer's row id in
+`CreateAccountService` and the not-found path in `UpdateAccountService` — so the change leaves no class it
+touched with a gap.
 
 ### Deliberately broken, one at a time
 
-| Fault introduced | What the suite answered | Verdict     |
-| ---------------- | ----------------------- | ----------- |
-| Not yet run      | Not yet run             | Not yet run |
+Four faults were injected one at a time into the finished change, each run against the fixtures that name it,
+then reverted so that the next run started from the code as delivered. The purpose is to show that a test
+fails for the reason claimed: a test that still passes with the fix removed was not checking the fix.
 
-### Measured baselines
+| Fault introduced                                                                                                                 | What the suite answered                                                                                                                                                                                                         | Verdict                                                                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `MonetaryRounding.Round` returns its argument unchanged — the change reverted at the one place every server value passes through | 31 failed, 114 passed of 145: `1.005` stayed `1.005`; three arrears of `100.10` summed to `300.29999999999995`; a projected day read `46.66666666666667`; a value that rounds to nothing came back as `-2.7755575615628914E-17` | caught — every requirement that names a rounded figure failed                                                                 |
+| `Round` calls `Math.Round` on the `double` and keeps the result, so the conversion to `decimal` is gone                          | `Round(1.005)` returned `1`; the accrual midpoint case read `1` where `1.01` was expected                                                                                                                                       | caught — the conversion is load-bearing: the `double` holding `1.005` actually holds `1.0049999999999999`, below the midpoint |
+| `Round` keeps the conversion to `decimal` and drops only the negative-zero guard                                                 | `Should_Publish_Zero_For_A_Negative_Value_That_Rounds_To_Nothing` failed on `double.IsNegative(rounded)`: expected `False`, got `True`                                                                                          | caught — the guard is a separate decision from the rounding, and its own test holds it                                        |
+| client `roundMoneyValue` drops only its zero guard                                                                               | `roundMoneyValue(0.3 - 0.1 - 0.2)` returned `-0`, and `formatMoneyValue` rendered `-$0.00`                                                                                                                                      | caught on the client, independently of the server                                                                             |
 
-| Measure     | Value       | Date        | Conditions  |
-| ----------- | ----------- | ----------- | ----------- |
-| Not yet run | Not yet run | Not yet run | Not yet run |
+The last one is why the guard exists twice. The server can be made to send a plain `0`, and the browser still
+computes totals of its own from the payload, so it can arrive at a negative zero by itself.
 
 ### What the evidence cannot show
 
-- Not yet run.
+- The faults were injected after the change was complete and the suites green, not while it was being written.
+  Each was reverted and the working tree checked against the committed content before the next was applied, but
+  one person ran the loop once; no second person repeated it.
+- The browser case is proven by its own assertion, not by a fault. Re-running the four-project E2E matrix once per
+  fault would have cost roughly eight minutes each, so the client fault was confirmed against the unit test
+  alone. What the browser renders for a negative zero rests on the E2E case that was already run against the
+  finished change.
+- `decimal` has no negative zero, so a value arriving from the database can never produce one; every test of the
+  guard constructs a computed `double` in memory. Nothing proves a stored value cannot carry the sign, only that
+  the type cannot.
+- Values stored before this change with more than two decimals are still published as stored (AM-1). The
+  evidence covers the code, not the rows an existing database already holds.
+- That every published money value passes through the helper is established by the call-site inventory, not by
+  the faults. A path that never reaches the helper fails no fault, so a path added later without rounding would
+  be caught only by its own test.
+- Rounding adds a decimal conversion to each call. Nothing measures what that costs, and at the row counts a
+  projection carries it was not judged worth measuring.

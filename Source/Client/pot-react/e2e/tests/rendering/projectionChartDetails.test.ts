@@ -3,12 +3,12 @@ import { addDays, format } from 'date-fns';
 
 import { expect, test } from '../../fixtures/auth';
 import {
-    collectApiFailures,
-    createAccountViaApi,
-    createE2eRequestContext as createRequestContext,
-    createExpenseViaApi,
-    deleteAccountViaApi,
-    deleteExpenseViaApi,
+  collectApiFailures,
+  createAccountViaApi,
+  createE2eRequestContext as createRequestContext,
+  createExpenseViaApi,
+  deleteAccountViaApi,
+  deleteExpenseViaApi,
 } from '../../helpers/api';
 import { toIsoDate } from '../../helpers/dates';
 import { selectRadixOption } from '../../helpers/radix';
