@@ -37,6 +37,24 @@ Two things follow from having one home per kind:
   edit.
 - **A convention** → a rule document under [standards/](standards/), tagged by enforcement and
   provenance; start from [standards/rule-template.md](standards/rule-template.md).
+- **A document you touch for another reason** → correct it as part of that change. There is no separate
+  documentation pass; a file is fixed while it is open, or the error survives until someone happens to
+  need it for something else.
+
+## Private and machine-local files
+
+Some files are deliberately never in git. An ignored file is never staged, never copied into a tracked
+document and never edited as part of a change: when a tracked document refers to one, the reference goes,
+because a link only the owner can follow is worse than no link.
+
+The files this covers: `Docs/Azure/Azure-Deployment-Notes.md`, `Source/Client/pot-react/.env.development`,
+`Source/Client/pot-react/.env.production`, `Source/Docker/.env.development` and
+`appsettings.Development.json`. `Data/README.md`, `Data/Scripts/` and `Data/**/Backups/` are
+machine-local and out of scope entirely.
+
+If one of them genuinely has to change, copy it aside, edit the copy, diff the two, then delete the copy.
+Nothing enters git. The Docker-scoped form of this rule is in
+[`.github/instructions/docker.instructions.md`](../.github/instructions/docker.instructions.md).
 
 ## Checking the set
 

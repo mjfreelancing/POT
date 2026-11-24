@@ -49,8 +49,7 @@ $script:LinkScopeFiles = @(
     'Docs/README.md',
     'AGENTS.md',
     'README.md',
-    'DOCS-REORGANISATION-PLAN.md',
-    'DECISIONS-TO-DISCUSS.md'
+    'PENDING-WORK.md'
 )
 
 # Code and configuration only: a developer guide under Source/ may cite an ADR, code and tests may not.

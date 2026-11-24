@@ -16,5 +16,6 @@ changing a port.
 - Health: API `http://localhost:5241/_health`, client `http://localhost:5175/health`.
 - After any lifecycle change, verify the containers are running and both health endpoints respond. On failure, report the root error and the smallest next corrective step.
 - Treat `Source/Docker/postgres-data/**` as protected runtime data: never modify it unless explicitly asked.
+- `Source/Docker/.env.development` is ignored and machine-local. Never stage it, copy its values into a tracked document, or edit it as part of a change; a tracked document that links to it loses the link. If it has to change, copy it aside, edit the copy, diff the two and delete the copy. [`Docs/README.md`](../../Docs/README.md) states this for every private file.
 - Keep Dockerfile/compose edits minimal and limited to the requested behavior; preserve existing `network`, `depends_on` and `healthcheck` intent unless asked otherwise.
 
