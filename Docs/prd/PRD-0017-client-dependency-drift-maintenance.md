@@ -100,7 +100,6 @@ Stop the client re-accumulating the drift PRD-0015 removed. PRD-0015 verified th
 ## 7. Validation / Test Considerations
 
 - Gates: PRD-0015 §6.1 (cold type-check, lint, unit, build, E2E, `npm ci`, manual smoke on touched surfaces).
-- Baselines to compare against (2026-09-21): unit **155 files / 780 tests green**; full E2E matrix **273 passed / 0 failed / 66 skipped**; lint **0 problems**; `npm audit` **0 vulnerabilities**.
 - Known monitored flake: `tests/api/interceptors/authInterceptor.test.ts` can fail 1–2 tests under parallel full-suite load and passes standalone — do not block a batch on it.
 - PRD-0015's regression policy applies: a batch that changes shipped behaviour or appearance is a failed batch.
 

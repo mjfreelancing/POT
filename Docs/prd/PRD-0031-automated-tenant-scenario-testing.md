@@ -275,7 +275,7 @@ The deliverable is the harness, so the manual checks are the opposite of the usu
 ## Verification Evidence
 
 The Manual Test Plan's Results table records which checks passed. This section records what was broken to make each one fail,
-so the experiment can be repeated, and the measurements a later reader would compare against.
+so the experiment can be repeated.
 
 ### Deliberately broken, one at a time
 
@@ -301,25 +301,14 @@ id when these runs were taken; the fixture now names the scenario as well, so a 
 A third came from measuring rather than reading: the mobile projects needed no reduced selection, because the user menu sits in the
 page header on every viewport, which made the `Desktop settings sheet` mobile skip unnecessary.
 
-### Measured baselines
-
-| What                      | Measurement                                                                                                                      | Why it is kept                                                                                                                            |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Client production build   | 55s on an idle machine (Vite 14.7s, Workbox `closeBundle` 22.9s); 535.6s on a machine that had lost most of its CPU              | the prodlike client server builds before it serves, so its start budget covers a build that can be an order of magnitude slower than idle |
-| Prodlike matrix           | 318 passed, 88 skipped, 0 failed in 7m12s — the 406 collected tests across four projects, with `retries: 0` locally (2026-11-02) | the completion gate, and the reference for spotting drift                                                                                 |
-| Browser destructive specs | 16 passed twice back to back, 1.9m then 1.6m, no reseeding between runs                                                          | repeatability, and what a second run costs                                                                                                |
-| Server suite              | 1262 tests, 289 of them integration at 8m28s; a second run of the same suite took 11m18s                                         | the suite's own drift, and why a duration is reported at all                                                                              |
-| Scenario tier             | 6 tests in 28s                                                                                                                   | the opt-in tier's reference                                                                                                               |
-| Coverage                  | 90.5% of lines and 78.1% of branches across five product assemblies (2026-11-02)                                                 | see the limit below                                                                                                                       |
-
 ### What the evidence cannot show
 
 `code_coverage.ps1` instruments Pot.App, Pot.AspNetCore, Pot.Data, Pot.Shared and Pot.EmailSender. It does not instrument
 `Pot.AspNetCore.Integration.Tests`, where the server harness lives, and the browser harness is TypeScript and PowerShell, so no
-line or branch figure exists for this work; the figures above describe product assemblies the harness does not change.
+line or branch figure exists for this work; what the script does report describes product assemblies the harness does not change.
 `Pot.EmailSender` sits at 10.3%, which is consistent with the integration host substituting `CapturingEmailWriter` for the real
 sender — the substitution A1 and A2 require.
 
 A machine short of CPU also produces failures that do not exist: an earlier prodlike attempt reported 32 failures, every one of
-which passed once the machine was idle. Time `npm run build` before trusting an E2E failure — 55s means the machine is healthy,
-minutes mean the run is not.
+which passed once the machine was idle. Time `npm run build` before trusting an E2E failure — a build that takes seconds means the
+machine is healthy, minutes mean the run is not.
