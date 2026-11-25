@@ -192,11 +192,12 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 ### Infrastructure
 
-| ADR                                                                         | Title                                                                                 | Status   |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------- |
-| [ADR-0025](ADR-0025-secret-values-live-outside-the-repository.md)           | Secret values live outside the repository, in a tracked template and a platform store | accepted |
-| [ADR-0032](ADR-0032-production-runs-two-container-apps.md)                  | Production runs two container apps: nginx serves the SPA and the API is separate      | accepted |
-| [ADR-0033](ADR-0033-public-tls-terminates-at-the-container-apps-ingress.md) | Public TLS terminates at the Container Apps ingress                                   | accepted |
+| ADR                                                                                 | Title                                                                                 | Status   |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------- |
+| [ADR-0025](ADR-0025-secret-values-live-outside-the-repository.md)                   | Secret values live outside the repository, in a tracked template and a platform store | accepted |
+| [ADR-0032](ADR-0032-production-runs-two-container-apps.md)                          | Production runs two container apps: nginx serves the SPA and the API is separate      | accepted |
+| [ADR-0033](ADR-0033-public-tls-terminates-at-the-container-apps-ingress.md)         | Public TLS terminates at the Container Apps ingress                                   | accepted |
+| [ADR-0062](ADR-0062-production-runs-on-managed-azure-services-in-australia-east.md) | Production runs on managed Azure services in Australia East                           | accepted |
 
 ## By status
 
@@ -204,7 +205,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0054](ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) — Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry
 
-### Accepted (58)
+### Accepted (59)
 
 - [ADR-0001](ADR-0001-optimistic-concurrency-is-checked-in-the-application.md) — Optimistic concurrency is checked in the application, not by the database
 - [ADR-0002](ADR-0002-endpoints-are-minimal-api-slices-with-their-own-models.md) — Endpoints are minimal API slices with their own request and response models
@@ -264,6 +265,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0059](ADR-0059-the-client-api-types-are-hand-written-and-the-committed-contract-is-a-reference.md) — The client's API types are hand-written, and the committed contract is a reference
 - [ADR-0060](ADR-0060-the-client-and-server-deploy-separately-and-api-version-skew-is-accepted-for-minutes.md) — The client and server deploy separately, and API version skew is accepted for minutes
 - [ADR-0061](ADR-0061-money-is-stored-as-a-double-and-rounded-to-two-decimals-at-the-boundary.md) — Money is stored as a double and rounded to two decimals at the boundary
+- [ADR-0062](ADR-0062-production-runs-on-managed-azure-services-in-australia-east.md) — Production runs on managed Azure services in Australia East
 
 ### Superseded (2)
 

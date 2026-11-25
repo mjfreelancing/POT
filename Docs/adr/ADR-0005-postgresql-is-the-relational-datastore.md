@@ -93,3 +93,9 @@ uniqueness of names alongside the application's own check. The same engine runs 
 
 - Enforcing uniqueness in the database as well as by application checks is
   [ADR-0007](ADR-0007-uniqueness-is-enforced-by-the-database.md).
+- Clarified 2026-11-25, without changing the decision: the hosted server applies minor version upgrades
+  on its own schedule, so the production version in Consequences is a reading, not a pinned value, and
+  will keep moving. The comparison that matters is the major version against the 13 the fixtures and
+  Entity Framework target.
+- Where the production server runs and on what plan is
+  [ADR-0062](ADR-0062-production-runs-on-managed-azure-services-in-australia-east.md).
