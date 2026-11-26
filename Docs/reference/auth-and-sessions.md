@@ -15,7 +15,7 @@ All under `/api/auth`, all anonymous.
 | POST   | `/refresh`               | Exchange the refresh cookie for a new access token |
 | POST   | `/logout`                | Revoke the current session and clear the cookie    |
 | POST   | `/password-reset/send`   | Email a reset code                                 |
-| POST   | `/password-reset/verify` | Submit the code and the new password               |
+| POST   | `/password-reset/verify` | Submit the username and the verification code      |
 
 ## The access token
 

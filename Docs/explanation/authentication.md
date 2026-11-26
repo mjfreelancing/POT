@@ -75,8 +75,9 @@ Changing a password also increments the user's token version, which invalidates 
 issued even for sessions that were not explicitly revoked.
 
 A forgotten password is reset with the same one-time-code mechanism as sign-up: request a code, receive
-it by email, then submit the code with the new password. A signed-in user changing a password supplies
-the current one instead.
+it by email, then submit the username, the reference code and the verification code. The email carries
+a temporary password, and completing the reset makes that temporary password the stored one. A
+signed-in user changing a password supplies the current one instead.
 
 ## Why the token carries no derived state
 
